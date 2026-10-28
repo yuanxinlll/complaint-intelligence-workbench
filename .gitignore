@@ -1,0 +1,21 @@
+# Data and locally generated models/results stay on each collaborator's machine.
+/data/
+/artifacts/
+/exports/
+/reports/*
+!/reports/SHARED_RESULTS.md
+!/reports/test_confusion_matrix.png
+!/reports/validation_review_curve.png
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.joblib
+*.pkl
+*.csv
+*.zip
+
