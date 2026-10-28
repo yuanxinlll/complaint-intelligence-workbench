@@ -80,7 +80,7 @@ def draw_figures(metrics, curve, rule, review):
 def main():
     if (ARTIFACTS / "test_metrics.json").exists() or (ARTIFACTS / "review_rule.json").exists():
         raise FileExistsError("Evaluation already started or completed. Preserve its frozen rule and results.")
-    progress("[1/5] Verify checksums and load the frozen model without retraining.")
+    progress("[1/5] Verifying data checksums and loading the frozen model.")
     audit = json.loads((ARTIFACTS / "data_audit.json").read_text())
     model_path = ARTIFACTS / "model.joblib"
     model = joblib.load(model_path)
@@ -91,7 +91,7 @@ def main():
         if hashlib.sha256(path.read_bytes()).hexdigest() != audit["processed_sha256"][split]:
             raise ValueError(f"{split} file changed since training.")
     validation = pd.read_csv(ROOT / "data/processed/validation.csv", dtype=str, keep_default_na=False)
-    progress("[2/5] Reproduce the historical validation rule: at least 80% subset accuracy and 100 records, maximizing coverage. This is not permission to auto-accept predictions.")
+    progress("[2/5] Reproducing the historical validation threshold rule; unflagged predictions still require human confirmation.")
     validation_predicted = model.predict(validation["narrative"])
     validation_scores = model.predict_proba(validation["narrative"]).max(axis=1)
     rule, curve = select_review_rule(validation["issue"], validation_predicted, validation_scores)
@@ -100,8 +100,8 @@ def main():
     save_json(ARTIFACTS / "validation_review_curve.json", curve)
     validation_review = review_performance(validation["issue"], validation_predicted, validation_scores, rule, labels)
     save_json(ARTIFACTS / "validation_review_metrics.json", validation_review)
-    progress(f"Historical rule saved: mode={rule['mode']}, threshold={rule['threshold']}, validation coverage={validation_review['automatic_coverage']:.2%}。")
-    progress("[3/5] Historical holdout evaluation. This split has already been viewed in project development; it is not a new independent test.")
+    progress(f"Rule saved and frozen: mode={rule['mode']}, threshold={rule['threshold']}, validation coverage={validation_review['automatic_coverage']:.2%}.")
+    progress("[3/5] Reproducing historical holdout evaluation. This split has already been viewed in development and is not a fresh independent test.")
     test = pd.read_csv(ROOT / "data/processed/test.csv", dtype=str, keep_default_na=False)
     if set(test["issue"]) - set(labels):
         raise ValueError("Test has unseen labels; report this before evaluation.")
@@ -112,8 +112,8 @@ def main():
     baseline = validation_metrics(test["issue"], dummy.predict(test["narrative"]), labels)
     review = review_performance(test["issue"], predicted, scores, rule, labels)
     save_json(ARTIFACTS / "test_metrics.json", {"evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "model_sha256": model_sha, "evaluation_split": "reserved_test", "baseline": baseline, "text_model": metrics, "review": review, "review_rule": rule, "test_used_for_selection": False})
-    progress(f"Historical holdout Accuracy={metrics['accuracy']:.4f}，Macro-F1={metrics['macro_f1']:.4f}, rule coverage={review['automatic_coverage']:.2%}。")
-    progress("[4/5] Save local per-class metrics, source links, errors and confusion matrix.")
+    progress(f"Historical holdout Accuracy={metrics['accuracy']:.4f}, Macro-F1={metrics['macro_f1']:.4f}, coverage={review['automatic_coverage']:.2%}.")
+    progress("[4/5] Saving metrics, predictions, error examples, and figures.")
     results = test[["complaint_id", "received_date", "issue", "narrative"]].copy()
     results["predicted_issue"] = predicted
     results["model_score"] = scores
@@ -126,7 +126,7 @@ def main():
     save_json(ARTIFACTS / "error_examples.json", {"selection": "Top 5 highest-score errors on reserved test; not representative of all errors.", "examples": json.loads(examples.to_json(orient="records"))})
     REPORTS.mkdir(exist_ok=True)
     draw_figures(metrics, curve, rule, review)
-    progress("[5/5] Update metadata; historical evaluation script complete.")
+    progress("[5/5] Updating metadata; evaluation complete.")
     metadata_path = ARTIFACTS / "metadata.json"
     metadata = json.loads(metadata_path.read_text())
     metadata.update({"review_threshold": rule["threshold"], "review_rule_mode": rule["mode"], "review_rule_status": "Frozen from validation; see review_rule.json", "review_rule_file": "review_rule.json", "test_evaluated": True, "test_metrics": "test_metrics.json"})

@@ -72,3 +72,5 @@ The monitor only reads local `state.json` and `training.log`; it does not start 
 ## Collaboration
 
 Keep the repository private. Use a feature branch and pull request for code changes. Do not commit real complaint text, identifiers, model weights, local environments or secrets. Tests use synthetic fixtures. No external AI API, mailbox connection, automatic online learning or cloud deployment is implemented. See [contribution guidance](CONTRIBUTING.md), [presentation draft](presentation/DEVPOST_DRAFT.md), and [project status](STATUS.md).
+
+Original November–December archive reference SHA-256: `2ef7d563bf6283a1282bcfba2d99d72f9bfa4a4617524682de72a9b3fa47bed0`. The archive itself is not included.

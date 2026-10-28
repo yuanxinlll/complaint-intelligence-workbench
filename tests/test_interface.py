@@ -63,11 +63,11 @@ class InterfaceTests(unittest.TestCase):
     def test_row_limit_and_export_roundtrip(self):
         with self.assertRaises(ValueError):
             read_upload(('narrative\n' + 'text\n' * 501).encode())
-        frame = read_upload('narrative,issue\n"A comma, and Unicode",A\n'.encode('utf-8-sig'))
+        frame = read_upload('narrative,issue\n"A comma, and Unicode café",A\n'.encode('utf-8-sig'))
         result = classify_batch(frame, FakeModel(), {"mode": "review_all"})
         encoded = result.to_csv(index=False).encode('utf-8-sig')
         self.assertTrue(encoded.startswith(b'\xef\xbb\xbf'))
-        self.assertIn('A comma, and Unicode', encoded.decode('utf-8-sig'))
+        self.assertIn('A comma, and Unicode café', encoded.decode('utf-8-sig'))
 
 
 if __name__ == "__main__":

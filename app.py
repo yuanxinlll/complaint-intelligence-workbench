@@ -14,12 +14,12 @@ st.set_page_config(page_title="Complaint Intelligence Workbench", page_icon="�
 
 if st.query_params.get("view") == "learn":
     st.markdown((ROOT / "LEARNING_GUIDE.md").read_text(encoding="utf-8"))
-    st.link_button("Open the classification workbench", "/")
+    st.link_button("Open workbench", "/")
     st.stop()
 
 st.title("📋 Complaint Intelligence Workbench")
 st.caption("Complaint classification suggestions for human confirmation. English debt collection prototype.")
-st.link_button("How it works — Chinese learning guide", "/?view=learn")
+st.link_button("How it works", "/?view=learn")
 st.warning("All suggestions require human confirmation, regardless of score or review hints. This prototype does not save confirmation decisions.")
 st.caption("Text stays on this computer; no external model API is used. Scores are not correctness probabilities. Limited to 7 trained English complaint categories.")
 
