@@ -10,12 +10,13 @@ import pandas as pd
 
 from src.data import ROOT, clean_text
 from src.review import review_flags
+from src.predict import candidate_details
 
 MAX_BYTES = 5 * 1024 * 1024
 MAX_ROWS = 500
 MAX_TEXT_LENGTH = 50000
 MAX_TOTAL_CHARACTERS = 2000000
-OUTPUT_COLUMNS = {"predicted_issue", "model_score", "needs_review", "input_error"}
+OUTPUT_COLUMNS = {"predicted_issue", "model_score", "needs_review", "input_error", "possible_ambiguity", "score_gap", "alternative_issue", "alternative_score"}
 
 
 def load_assets():
@@ -77,10 +78,18 @@ def classify_batch(frame, model, rule):
     result["model_score"] = float("nan")
     result["needs_review"] = True
     result["input_error"] = errors
+    result["possible_ambiguity"] = False
+    result["score_gap"] = float("nan")
+    result["alternative_issue"] = ""
+    result["alternative_score"] = float("nan")
     valid = errors.eq("")
     if valid.any():
         scores = model.predict_proba(result.loc[valid, "narrative"])
         result.loc[valid, "predicted_issue"] = model.classes_[scores.argmax(axis=1)]
         result.loc[valid, "model_score"] = scores.max(axis=1)
         result.loc[valid, "needs_review"] = review_flags(scores.max(axis=1), rule)
+        details = pd.DataFrame([candidate_details(row, model.classes_) for row in scores], index=result.index[valid])
+        for column in ["possible_ambiguity", "score_gap", "alternative_issue", "alternative_score"]:
+            values = details[column].astype(float) if column in {"score_gap", "alternative_score"} else details[column]
+            result.loc[valid, column] = values
     return result

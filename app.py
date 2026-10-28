@@ -14,13 +14,13 @@ st.set_page_config(page_title="Complaint Intelligence Workbench", page_icon="�
 
 if st.query_params.get("view") == "learn":
     st.markdown((ROOT / "LEARNING_GUIDE.md").read_text(encoding="utf-8"))
-    st.link_button("打开分类工作台", "/")
+    st.link_button("Open the classification workbench", "/")
     st.stop()
 
 st.title("📋 Complaint Intelligence Workbench")
-st.caption("Turn complaint narratives into issue categories for human review. A prototype for English debt collection complaints.")
+st.caption("Complaint classification suggestions for human confirmation. English debt collection prototype.")
 st.link_button("How it works — Chinese learning guide", "/?view=learn")
-st.warning("Reserved test accuracy: 48.50%. Accuracy among unflagged records: 70.77%. Unflagged predictions can still be wrong. Human judgment is required.")
+st.warning("All suggestions require human confirmation, regardless of score or review hints. This prototype does not save confirmation decisions.")
 st.caption("Text stays on this computer; no external model API is used. Scores are not correctness probabilities. Limited to 7 trained English complaint categories.")
 
 
@@ -37,8 +37,9 @@ except Exception:
     st.code("python -m src.train\npython -m src.evaluate")
     st.stop()
 
-st.caption(f"Review rule: scores below {rule['threshold']} are flagged for human review." if rule["mode"] == "threshold" else "Review rule: flag every record for human review.")
-single, batch = st.tabs(["Single complaint", "Batch CSV"])
+st.caption(f"Additional review hint: scores below {rule['threshold']} are flagged. Unflagged does not mean approved." if rule["mode"] == "threshold" else "Additional review hint: flag every record.")
+st.caption("Active model: v1 (unchanged). Possible ambiguity means the top-two class scores differ by less than 0.10. This display heuristic is unvalidated; other results may also be ambiguous or wrong.")
+single, batch, overview = st.tabs(["Single complaint", "Batch CSV", "Project overview"])
 with single:
     text = st.text_area("Complaint narrative (English)", height=160, max_chars=50000, placeholder="Describe what happened. No issue label is required.")
     st.caption("Maximum 50,000 characters. The model was trained on English complaints.")
@@ -46,10 +47,14 @@ with single:
         try:
             with st.spinner("Classifying locally…"):
                 result = predict_text(text, model, rule)
-            st.subheader("Prediction")
-            st.write("Predicted issue:", result["predicted_issue"])
+            st.subheader("Suggested category")
+            st.write(result["predicted_issue"])
+            if result["possible_ambiguity"]:
+                st.warning("Possible ambiguity — compare the alternative with the original narrative.")
+                st.write("Alternative category:", result["alternative_issue"])
+                st.caption(f"Alternative class score: {result['alternative_score']:.4f}. Top-two score gap: {result['score_gap']:.4f}. Neither score establishes the correct category.")
             st.write("Model score:", result["model_score"])
-            st.write("Review status:", "Needs human review" if result["needs_review"] else "Not flagged by the rule; errors are still possible")
+            st.write("Additional review hint:", "Flagged" if result["needs_review"] else "Not flagged; confirmation is still required")
             st.write("Original narrative:", text)
         except ValueError as error:
             st.error(str(error))
@@ -96,7 +101,9 @@ with batch:
         a.metric("Batch records", len(result))
         b.metric("Classified", int(valid.sum()))
         c.metric("Input errors", int((~valid).sum()))
-        st.caption("original_issue is the supplied label, if any; predicted_issue is the model output; needs_review is a rule-based hint.")
+        if "possible_ambiguity" not in result:
+            st.info("These cached results predate candidate display. Classify this batch again to view alternatives.")
+        st.caption("predicted_issue is a suggestion, not a confirmed label. alternative_issue is shown only for the display ambiguity hint. Original labels remain separate; every result needs human confirmation.")
         category = st.selectbox("Filter by predicted issue", ["All"] + sorted(result.loc[valid, "predicted_issue"].unique().tolist()))
         review = st.selectbox("Filter by review status", ["All", "Needs human review", "Not flagged", "Input errors"])
         shown = result.copy()
@@ -118,4 +125,7 @@ with batch:
             st.dataframe(counts, width="stretch")
         else:
             st.info("No valid predictions are available for the distribution chart.")
-        st.download_button("Export filtered results as CSV", shown.to_csv(index=False).encode("utf-8-sig"), "complaint_predictions.csv", "text/csv")
+        st.download_button("Export unconfirmed suggestions as CSV", shown.to_csv(index=False).encode("utf-8-sig"), "complaint_suggestions_unconfirmed.csv", "text/csv")
+
+with overview:
+    st.markdown((ROOT / "DEMO.md").read_text(encoding="utf-8"))
