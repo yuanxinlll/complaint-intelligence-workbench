@@ -80,7 +80,7 @@ def draw_figures(metrics, curve, rule, review):
 def main():
     if (ARTIFACTS / "test_metrics.json").exists() or (ARTIFACTS / "review_rule.json").exists():
         raise FileExistsError("Evaluation already started or completed. Preserve its frozen rule and results.")
-    progress("[1/5] 检查文件校验值，加载冻结模型；不重新训练。")
+    progress("[1/5] Verifying data checksums and loading the frozen model.")
     audit = json.loads((ARTIFACTS / "data_audit.json").read_text())
     model_path = ARTIFACTS / "model.joblib"
     model = joblib.load(model_path)
@@ -91,7 +91,7 @@ def main():
         if hashlib.sha256(path.read_bytes()).hexdigest() != audit["processed_sha256"][split]:
             raise ValueError(f"{split} file changed since training.")
     validation = pd.read_csv(ROOT / "data/processed/validation.csv", dtype=str, keep_default_na=False)
-    progress("[2/5] 仅使用验证集选门槛：准确率至少 80%，接受样本至少 100，优先覆盖最多。")
+    progress("[2/5] Selecting a validation threshold: at least 80% accuracy and 100 unflagged records; maximize coverage.")
     validation_predicted = model.predict(validation["narrative"])
     validation_scores = model.predict_proba(validation["narrative"]).max(axis=1)
     rule, curve = select_review_rule(validation["issue"], validation_predicted, validation_scores)
@@ -100,8 +100,8 @@ def main():
     save_json(ARTIFACTS / "validation_review_curve.json", curve)
     validation_review = review_performance(validation["issue"], validation_predicted, validation_scores, rule, labels)
     save_json(ARTIFACTS / "validation_review_metrics.json", validation_review)
-    progress(f"规则已落盘冻结：mode={rule['mode']}，threshold={rule['threshold']}，验证覆盖率={validation_review['automatic_coverage']:.2%}。")
-    progress("[3/5] 首次评估保留测试集；本次结果不会用于修改模型或门槛。")
+    progress(f"Rule saved and frozen: mode={rule['mode']}, threshold={rule['threshold']}, validation coverage={validation_review['automatic_coverage']:.2%}.")
+    progress("[3/5] Evaluating the reserved test set without changing the model or threshold.")
     test = pd.read_csv(ROOT / "data/processed/test.csv", dtype=str, keep_default_na=False)
     if set(test["issue"]) - set(labels):
         raise ValueError("Test has unseen labels; report this before evaluation.")
@@ -112,8 +112,8 @@ def main():
     baseline = validation_metrics(test["issue"], dummy.predict(test["narrative"]), labels)
     review = review_performance(test["issue"], predicted, scores, rule, labels)
     save_json(ARTIFACTS / "test_metrics.json", {"evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "model_sha256": model_sha, "evaluation_split": "reserved_test", "baseline": baseline, "text_model": metrics, "review": review, "review_rule": rule, "test_used_for_selection": False})
-    progress(f"测试 Accuracy={metrics['accuracy']:.4f}，Macro-F1={metrics['macro_f1']:.4f}，规则覆盖率={review['automatic_coverage']:.2%}。")
-    progress("[4/5] 保存各类指标、原文关联、错误案例与混淆矩阵。")
+    progress(f"Test Accuracy={metrics['accuracy']:.4f}, Macro-F1={metrics['macro_f1']:.4f}, coverage={review['automatic_coverage']:.2%}.")
+    progress("[4/5] Saving metrics, predictions, error examples, and figures.")
     results = test[["complaint_id", "received_date", "issue", "narrative"]].copy()
     results["predicted_issue"] = predicted
     results["model_score"] = scores
@@ -126,7 +126,7 @@ def main():
     save_json(ARTIFACTS / "error_examples.json", {"selection": "Top 5 highest-score errors on reserved test; not representative of all errors.", "examples": json.loads(examples.to_json(orient="records"))})
     REPORTS.mkdir(exist_ok=True)
     draw_figures(metrics, curve, rule, review)
-    progress("[5/5] 更新模型元信息；阶段 3 完成，阶段 4 未开始。")
+    progress("[5/5] Updating metadata; evaluation complete.")
     metadata_path = ARTIFACTS / "metadata.json"
     metadata = json.loads(metadata_path.read_text())
     metadata.update({"review_threshold": rule["threshold"], "review_rule_mode": rule["mode"], "review_rule_status": "Frozen from validation; see review_rule.json", "review_rule_file": "review_rule.json", "test_evaluated": True, "test_metrics": "test_metrics.json"})

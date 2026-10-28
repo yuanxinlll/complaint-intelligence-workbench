@@ -14,12 +14,12 @@ st.set_page_config(page_title="Complaint Intelligence Workbench", page_icon="�
 
 if st.query_params.get("view") == "learn":
     st.markdown((ROOT / "LEARNING_GUIDE.md").read_text(encoding="utf-8"))
-    st.link_button("打开分类工作台", "/")
+    st.link_button("Open workbench", "/")
     st.stop()
 
 st.title("📋 Complaint Intelligence Workbench")
 st.caption("Turn complaint narratives into issue categories for human review. A prototype for English debt collection complaints.")
-st.link_button("How it works — Chinese learning guide", "/?view=learn")
+st.link_button("How it works", "/?view=learn")
 st.warning("Reserved test accuracy: 48.50%. Accuracy among unflagged records: 70.77%. Unflagged predictions can still be wrong. Human judgment is required.")
 st.caption("Text stays on this computer; no external model API is used. Scores are not correctness probabilities. Limited to 7 trained English complaint categories.")
 

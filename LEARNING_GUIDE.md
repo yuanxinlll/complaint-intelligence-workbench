@@ -1,160 +1,48 @@
-# 从零开始：我们到底做了什么？
+# How it works
 
-比赛操作页面全部使用英文，这份单独的学习讲解保留中文。
-你可以把这个项目想成一个“帮客服整理信件的小助手”。它读一封英文投诉，猜这封信属于哪一种问题，然后把结果排成表格，方便人检查。
+The workbench organizes English debt collection complaints into seven issue categories for human review. It runs locally using pandas, scikit-learn, and Streamlit.
 
-它现在会分类，不会聊天、处理退款或判定谁对谁错。
+## From text to prediction
 
-## 1. 我们想解决什么问题？
+1. **Normalize:** standardize Unicode, whitespace, and case while retaining numbers and negation.
+2. **Vectorize:** TF-IDF assigns weights to words and two-word phrases, using up to 40,000 features learned from training data only.
+3. **Classify:** logistic regression scores each category; the highest-scoring category becomes the prediction.
+4. **Flag:** scores below the frozen threshold of 0.45 trigger a human review flag.
 
-如果客服收到一万封投诉，逐条阅读、分类很费时间。
-我们的目标是先让电脑粗分，再让人查看和修正。比如“这笔债务不是我的”和“我没收到书面通知”，可能需要归到不同问题里。
-
-## 2. 数据从哪里来？
-
-你下载了 CFPB 的官方历史投诉 CSV。CSV 可以理解成一种很简单的表格文件：一行一条记录，一列一种信息。
-它有 591,058 行，但只有 154,916 行有投诉正文。我们没有自己编造这些训练投诉。
-
-我们选出其中的 Debt collection，也就是债务催收投诉，共 11,706 行，日期是 2024 年 11–12 月。
-选它是因为规模合适，恰好有 7 类问题，可以保留全部类别。
-
-正文是消费者写的话；Issue 是消费者提交投诉时选的类别。这个类别像已有答案，但可能选错，不是专家判定。
-
-当前在线 API 已不提供正文，所以我们改读你下载的官方历史档案。API 可以想成“程序自动向网站取资料的入口”，本项目现在不靠它获取训练正文。
-
-## 3. 哪些东西喂给了电脑？
-
-只给它投诉正文作为判断依据。
-训练时另外提供 Issue，告诉它“这段话已有的标签是什么”，让它学习两者的关系。
-
-没有把公司、问题子类别、处理结果放进输入。特别不能把正确类别混进正文特征，否则就像考试时把答案写在题目里。
-
-## 4. 为什么要清洗和去重？
-
-同一句话可能多了空格、换行，或者大小写不同。我们先统一这些小差异，方便比较。
-我们没有随便删掉“不”、数字等可能有用的信息。
-
-同一段正文反复出现，会让电脑误以为自己学到了很多不同例子。
-我们去掉了 2,529 条重复超额记录，保留每段正文日期最早的一条，剩下 9,177 条。
-有 25 组相同正文对应不同类别，我们记录了这个矛盾，保留最早记录的标签，没有为了提高成绩挑答案。
-这种去重只能处理基本相同的文字，改写过的相似模板还可能留下。
-
-## 5. 为什么把数据分三份？
-
-可以把它想成学习、模拟考试、正式考试：
-
-| 部分 | 用来做什么 | 条数 |
-|---|---|---:|
-| 训练集 | 给电脑看例子，学习文字与类别的关系 | 6,351 |
-| 验证集 | 检查学习效果，选择复核门槛 | 1,428 |
-| 测试集 | 规则确定后，再检查一次真实表现 | 1,398 |
-
-我们按日期先后分，不是随机混在一起。更早的记录用于学习，更晚的用于检查。
-相同正文不会同时跑进两份数据，避免“考题已经背过”的假高分。
-测试集已经检查过一次。以后如果反复根据它改模型，它就不能继续充当完全独立的正式考试。
-
-## 6. TF-IDF 是什么？你已经接触过它
-
-电脑不直接理解句子的意思，先把文字变成数字。
-TF-IDF 会给词或相邻两个词计算权重。例如一封信反复提到 written notice，这些词可能对区分“书面通知问题”有帮助。
-到处都有的词通常区分作用较小。但这只是统计线索，不等于电脑懂法律或懂整件事情。
-
-我们最多保留 40,000 个词或词组特征。词表只从训练集建立，不能提前偷看验证和测试文字来学习。
-
-## 7. 逻辑回归是什么？“训练”到底做了什么？
-
-逻辑回归是一个轻量分类方法。它学习：“哪些词更常出现在某一种投诉里？”
-训练就是反复调整这些数字权重，让训练例子里的分类分数更符合已有标签。
-它不是把聊天大模型重新训练一遍，也没有调用 ChatGPT 或 OpenAI API。
-
-真正执行训练的主要代码在 src/train.py：
+Training fits the vectorizer and classifier together in a scikit-learn pipeline:
 
 ```python
 model.fit(train["narrative"], train["issue"])
 ```
 
-可以读成：“请根据训练正文和已有类别，学习分类规律。”
-使用模型时是：
+The saved pipeline is reused for new complaints. Only narrative text enters the model; supplied labels, companies, and response outcomes are not input features. Clicking **Classify** never retrains the model.
 
-```python
-model.predict([new_complaint])
-```
+## Data and evaluation
 
-可以读成：“请用学到的规律，给这段新文字分类。”
-训练后的数字权重保存成 model.joblib，下次打开界面直接读取，不用每次重学。
+The CFPB November–December 2024 archive supplied 11,706 labeled debt collection narratives. Deduplication retained the earliest record for each normalized narrative, including its original label when later labels disagreed, leaving 9,177 records.
 
-## 8. Pipeline 又是什么？
+| Split | Dates (2024) | Records | Purpose |
+|---|---|---:|---|
+| Training | Nov 1–Dec 12 | 6,351 | Learn text features and category weights |
+| Validation | Dec 13–21 | 1,428 | Select the review threshold |
+| Test | Dec 22–31 | 1,398 | Evaluate the frozen model and rule |
 
-就是把“文字变数字”和“数字变分类”接在一起，像两站流水线。
-这样训练和以后使用时都走同一套步骤，也能避免不小心让 TF-IDF 偷看测试数据。
+Normalized duplicates cannot cross splits; similar templates may remain. The threshold maximizes validation coverage while requiring at least 100 unflagged records and 80% observed accuracy. If no threshold qualifies, all records are flagged. The rule is saved before test evaluation.
 
-## 9. 为什么还训练了一个很笨的模型？
+## Reading the output
 
-我们还用了 DummyClassifier，它始终猜训练集中最多的类别。
-这叫基线。只有知道“什么也没学、总猜同一个答案”能得多少分，才能判断复杂模型有没有帮助。
+- `predicted_issue`: the highest-scoring category.
+- `model_score`: its uncalibrated model score, not a probability of correctness.
+- `needs_review`: whether the review rule flagged the prediction.
+- `original_issue`: an optional user-supplied label for comparison.
+- `input_error`: why a batch row could not be classified.
 
-## 10. 成绩到底怎么样？
+Test accuracy was **48.50%**, compared with **46.57%** for always predicting the majority class. Macro-F1, which weights each category equally, improved from **0.0908** to **0.3888**.
 
-正式测试有 1,398 条：
+Unflagged test records reached only **70.77%** accuracy, below the validation selection target. A false review flag means the score met the threshold, not that the prediction is verified. Labels are consumer-selected, and one complaint may contain multiple issues.
 
-| 方法 | Accuracy | Macro-F1 |
-|---|---:|---:|
-| 一直猜最多类别 | 46.57% | 0.0908 |
-| 我们的文本分类器 | 48.50% | 0.3888 |
+## Using the workbench
 
-Accuracy 可以简单理解成“这批测试中，多少比例猜对了原始标签”。
-Macro-F1 是先分别给每种类别打分，再平等平均，避免大类别把小类别的问题盖住；它不是正确率。
-文本模型能分出更多类别，但总体仍会经常出错。我们没有达到可以放心自动处理的水平。
+Enter a complaint or upload a CSV, classify it, then filter and export results. Invalid rows remain visible with an error. The distribution chart includes all valid batch rows, regardless of table filters. The three built-in examples are synthetic demonstrations, not evaluation evidence.
 
-## 11. 模型分数和人工复核是什么意思？
-
-电脑会给 7 类打分，取最高的那一类。显示 0.70 不表示“有 70% 的概率正确”，因为我们没有把分数校准成这种含义。
-
-我们只用验证集挑了门槛 0.45：最高分低于它，就提示人工复核。
-但是测试中达到门槛的 325 条里，也只有 70.77% 和标签一致，还有 95 条错误。
-所以 needs_review=false 只表示“这个简单规则没提醒”，不是“不需要人管”。
-它也不能保证发现从没见过的新问题。
-
-## 12. 每个工具负责什么？
-
-| 名称 | 在这里干的事情 |
-|---|---|
-| Python | 写处理流程的语言 |
-| pandas | 读表格、筛选行、统计数量 |
-| scikit-learn | 提供 TF-IDF、分类器和考试评分工具 |
-| joblib | 保存和读取训练好的模型 |
-| matplotlib | 把测试结果画成图 |
-| Streamlit | 把 Python 变成本地可点击页面 |
-| Git | 记录代码修改历史 |
-| GitHub private 仓库 | 存放可与受邀同学共享的代码 |
-
-没有云数据库，没有 GPU，没有训练大语言模型，也没有付费 AI API。现在的数据就是本机 CSV 文件。
-
-## 13. 现在打开的窗口做什么？
-
-你输入一段英文投诉，或者上传 CSV。页面把文字交给已经训练好的模型，再显示预测、分数和复核提示。
-你可以筛选结果、看本次上传的类别分布、下载结果 CSV。
-这叫“推理”：用学好的规律做新题。点击分类不会重新训练。
-
-只有输入文字进入模型；上传文件里如果有原始类别，会显示为 original_issue，预测显示为 predicted_issue，不把两者混在一起。
-空行不会硬猜，页面会告诉你输入有问题。
-演示按钮里的 3 条文字是人为编写的，只用来试操作，不算真实测试成绩。
-
-## 14. GitHub 上有什么？
-
-之前已经建立私有仓库，共享了代码、测试、依赖和真实结果汇总。
-原始投诉数据、本地模型、带正文的预测结果没有上传。同学要按 README 从官方获取数据，在自己电脑生成模型。
-私有仓库需要你邀请同学，对方接受后才能访问；只有链接还不够。
-本阶段的新界面和这份讲解先保存在本机，是否已同步到 GitHub 应以仓库实际内容为准。
-
-## 15. 哪些文件值得先读？
-
-先读 app.py，看页面有哪些按钮；再读 src/predict.py，看一条文字怎么得到结果。
-之后看 src/data.py，了解怎么准备练习题和考题；最后看 src/train.py 和 src/evaluate.py，了解学习和评分过程。
-不需要一下子读懂所有代码。先把“文字 → 数字 → 类别 → 人工检查”这条线看明白就够了。
-
-## 16. 我们还没有完成什么？
-
-还没有正式完成阶段 5 的整个流程检查和比赛演示材料，没有公开部署或提交比赛。
-这个原型不决定退款、不自动回复、不判断真实欺诈、不排名公司，也不证明投诉根因。
-下一步需要你确认后，才进入阶段 5。
+For implementation details, start with `src/predict.py`, then read `src/data.py`, `src/train.py`, and `src/evaluate.py`. The interface lives in `app.py` and `src/interface.py`.
