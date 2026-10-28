@@ -14,7 +14,7 @@ def main():
     archive = ROOT / "exports/complaint-intelligence-workbench-code.zip"
     if output.exists() or archive.exists():
         raise FileExistsError("Share snapshot already exists; preserve it and review before rebuilding.")
-    files = [ROOT / name for name in [".gitignore", "README.md", "STATUS.md", "requirements.txt", "requirements-evaluation.txt"]]
+    files = [ROOT / name for name in [".gitignore", "README.md", "STATUS.md", "LEARNING_GUIDE.md", "app.py", "requirements.txt", "requirements-evaluation.txt"]]
     files += sorted((ROOT / "src").glob("*.py"))
     files += sorted((ROOT / "tests").glob("test_*.py"))
     files += [ROOT / "reports" / name for name in ["SHARED_RESULTS.md", "test_confusion_matrix.png", "validation_review_curve.png"]]

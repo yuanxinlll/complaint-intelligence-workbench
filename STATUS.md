@@ -4,7 +4,7 @@
 - 阶段 1 数据检查：完成，采用用户手动下载的 CFPB 官方历史正文档案。
 - 阶段 2 核心模型：完成，保存本地模型与验证结果。
 - 阶段 3 独立评估及复核规则：完成，结果见 reports/SHARED_RESULTS.md。
-- 阶段 4 Streamlit 界面：尚未开始，等待用户确认。
+- 阶段 4 Streamlit 界面：完成，含单条、批量、筛选、统计和导出；另有从零讲解页面。
 - 阶段 5 整体验证与演示：尚未开始。
 
 GitHub 私有仓库：https://github.com/yuanxinlll/complaint-intelligence-workbench
