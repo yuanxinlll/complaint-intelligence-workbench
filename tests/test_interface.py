@@ -28,7 +28,7 @@ class InterfaceTests(unittest.TestCase):
         result = classify_batch(frame, FakeModel(), {"mode": "threshold", "threshold": .45})
         self.assertEqual(len(result), 2)
         self.assertEqual(result.loc[1, "predicted_issue"], "")
-        self.assertEqual(result.loc[1, "input_error"], "正文为空")
+        self.assertEqual(result.loc[1, "input_error"], "Empty narrative")
         self.assertTrue(result.loc[1, "needs_review"])
 
     def test_bad_encoding_missing_column_and_duplicate_headers(self):
