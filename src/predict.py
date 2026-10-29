@@ -14,8 +14,26 @@ from src.review import review_flags
 AMBIGUITY_GAP = 0.10
 
 
+def validate_probabilities(scores, classes, expected_rows):
+    """Reject malformed probability output before selecting any category."""
+    values = np.asarray(scores, dtype=float)
+    labels = np.asarray(classes)
+    if labels.ndim != 1 or len(labels) < 2 or len(set(labels.tolist())) != len(labels):
+        raise ValueError("The model must provide distinct category labels.")
+    if values.shape != (expected_rows, len(labels)):
+        raise ValueError("Model scores do not match the input rows and categories.")
+    if not np.isfinite(values).all():
+        raise ValueError("The model returned non-finite scores; no suggestion was produced.")
+    if (values < 0).any() or (values > 1).any() or not np.allclose(values.sum(axis=1), 1, atol=1e-5, rtol=1e-5):
+        raise ValueError("The model returned invalid probability scores; no suggestion was produced.")
+    return values
+
+
 def candidate_details(scores, classes):
     values = np.asarray(scores, dtype=float)
+    if values.ndim != 1:
+        raise ValueError("Expected one probability score per category.")
+    values = validate_probabilities(values[None, :], classes, 1)[0]
     order = np.argsort(-values, kind="stable")
     first, second = int(order[0]), int(order[1])
     gap = float(values[first] - values[second])
@@ -26,14 +44,19 @@ def candidate_details(scores, classes):
 
 
 def predict_text(text, model, review_rule=None):
-    if not clean_text(text):
+    if not isinstance(text, str) or not clean_text(text):
         raise ValueError("Enter a nonempty complaint narrative.")
     if len(text) > 50000:
         raise ValueError("The narrative exceeds 50,000 characters. Shorten it and try again.")
-    scores = model.predict_proba([text])[0]
+    scores = validate_probabilities(model.predict_proba([text]), model.classes_, 1)[0]
     index = int(scores.argmax())
     flag = bool(review_flags([scores[index]], review_rule)[0]) if review_rule else None
-    status = "Flagged using the validation-selected rule; an unflagged result can still be wrong." if review_rule else "No matching review rule loaded; review flag is unavailable."
+    if review_rule and review_rule.get("mode") == "review_all":
+        status = "Every suggestion requires human review; no automatic acceptance rule is enabled."
+    elif review_rule:
+        status = "Flagged using the validation-selected rule; an unflagged result can still be wrong."
+    else:
+        status = "No matching review rule loaded; review flag is unavailable."
     return {"predicted_issue": str(model.classes_[index]), "model_score": round(float(scores[index]), 6), "needs_review": flag, "review_status": status, "score_note": "Model scores are not calibrated probabilities of correctness.", **candidate_details(scores, model.classes_)}
 
 

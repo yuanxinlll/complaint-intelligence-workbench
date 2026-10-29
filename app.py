@@ -33,7 +33,7 @@ profiles=registry();model_id=st.selectbox("Model",list(profiles["profiles"]),ind
 def assets(model_id,registry_stamp):return load_profile(model_id)
 try:
     with st.spinner("Loading the model…"):
-        model,rule,info=assets(model_id,(ROOT/"config/model_profiles.json").stat().st_mtime_ns)
+        model,rule,info=assets(model_id,json.dumps(profiles["profiles"][model_id], sort_keys=True))
 except Exception as error:
     st.error(str(error))
     st.info("A fresh clone contains no data or weights. See README for local artifact setup. No download, training or fallback was started automatically.")
@@ -160,8 +160,13 @@ with batch:
         if duplicates:
             st.warning(f"Found {duplicates} duplicate narrative rows. Every row is retained and included in the batch statistics.")
         if st.button("Classify batch", type="primary"):
-            with st.spinner(f"Classifying {len(frame)} records…"):
-                st.session_state["batch_result"] = classify_batch(frame, model, rule)
+            st.session_state.pop("batch_result", None)
+            try:
+                batch_prediction = classify_batch(frame, model, rule)
+            except ValueError as error:
+                st.error(str(error))
+            else:
+                st.session_state["batch_result"] = batch_prediction
                 result_frame = st.session_state["batch_result"]
                 result_frame["model_version"] = info["version"]
                 result_frame["confirmation_status"] = "unconfirmed"

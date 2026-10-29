@@ -10,7 +10,7 @@ import pandas as pd
 
 from src.data import ROOT, clean_text
 from src.review import review_flags
-from src.predict import candidate_details
+from src.predict import candidate_details, validate_probabilities
 
 MAX_BYTES = 5 * 1024 * 1024
 MAX_ROWS = 500
@@ -38,6 +38,8 @@ def read_upload(content):
         text = content.decode("utf-8-sig")
     except UnicodeDecodeError as error:
         raise ValueError("Unsupported encoding. Save the file as CSV UTF-8 and try again.") from error
+    if "\x00" in text:
+        raise ValueError("The CSV contains null bytes. Save it as a clean UTF-8 CSV and try again.")
     try:
         reader = csv.reader(io.StringIO(text), strict=True)
         header = next(reader)
@@ -72,8 +74,18 @@ def read_upload(content):
 
 
 def classify_batch(frame, model, rule):
+    if not frame.columns.is_unique or "narrative" not in frame:
+        raise ValueError("Provide a unique narrative column before batch classification.")
     result = frame.copy()
-    errors = result["narrative"].map(lambda text: "Empty narrative" if not clean_text(text) else "Narrative exceeds 50,000 characters" if len(text) > MAX_TEXT_LENGTH else "")
+    def input_error(text):
+        if not isinstance(text, str):
+            return "Narrative must be text"
+        if not clean_text(text):
+            return "Empty narrative"
+        if len(text) > MAX_TEXT_LENGTH:
+            return "Narrative exceeds 50,000 characters"
+        return ""
+    errors = result["narrative"].map(input_error)
     result["predicted_issue"] = ""
     result["model_score"] = float("nan")
     result["needs_review"] = True
@@ -84,7 +96,7 @@ def classify_batch(frame, model, rule):
     result["alternative_score"] = float("nan")
     valid = errors.eq("")
     if valid.any():
-        scores = model.predict_proba(result.loc[valid, "narrative"])
+        scores = validate_probabilities(model.predict_proba(result.loc[valid, "narrative"]), model.classes_, int(valid.sum()))
         result.loc[valid, "predicted_issue"] = model.classes_[scores.argmax(axis=1)]
         result.loc[valid, "model_score"] = scores.max(axis=1)
         result.loc[valid, "needs_review"] = review_flags(scores.max(axis=1), rule)

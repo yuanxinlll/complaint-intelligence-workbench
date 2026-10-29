@@ -77,4 +77,4 @@ The read-only progress source is in `research/discrimination_20261028/finetune_r
 
 ## Collaboration and presentation
 
-Use English for repository code/documentation. [CONTRIBUTING.md](CONTRIBUTING.md) covers data and evaluation isolation. [DEMO.md](DEMO.md), [presentation/DEVPOST_DRAFT.md](presentation/DEVPOST_DRAFT.md) and the pitch are presentation materials, not proof of submission. Research failures and limitations are preserved in `docs/`. The code repository remains private. The owner authorized preparing a DATA100 hosted demo; current deployment status is in `cloud_demo/README.md`. No automatic competition submission occurs.
+Use English for repository code/documentation. [CONTRIBUTING.md](CONTRIBUTING.md) covers data and evaluation isolation. [DEMO.md](DEMO.md), [presentation/DEVPOST_DRAFT.md](presentation/DEVPOST_DRAFT.md) and the pitch are presentation materials, not proof of submission. Research failures and limitations are preserved in `docs/`. The code repository is public. The owner authorized preparing a DATA100 hosted demo; current deployment status is in `cloud_demo/README.md`. No automatic competition submission occurs.
