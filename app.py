@@ -8,15 +8,11 @@ from src.predict import predict_text
 from src.email_import import extract_email
 from src.runtime_models import registry,load_profile
 ROOT=Path(__file__).resolve().parent
-<<<<<<< HEAD
-st.set_page_config(page_title="ComplaintLens",page_icon=str(ROOT/"assets/complaintlens-icon.png"),layout="wide")
-=======
 PUBLIC_DEMO=os.environ.get("CIW_PUBLIC_DEMO")=="1"
-st.set_page_config(page_title="Complaint Intelligence Workbench",page_icon="📋",layout="wide")
+st.set_page_config(page_title="ComplaintLens",page_icon=str(ROOT/"assets/complaintlens-icon.png"),layout="wide")
 if PUBLIC_DEMO:
     st.warning("Hosted demonstration: use synthetic text only. Inputs and uploaded files are sent to the hosting server. Do not enter personal, financial or real complaint data.")
     st.caption("Online demo: DATA100 TF-IDF model. The separate local app defaults to FT01 DistilBERT. No external AI API is used.")
->>>>>>> b259f3d866c286d44425dd6b8e72363f566dbf27
 if st.query_params.get("view")=="learn":
     guide=(ROOT/"LEARNING_GUIDE_EN.md").read_text()
     if PUBLIC_DEMO:
@@ -30,14 +26,8 @@ if st.query_params.get("view")=="results":
     st.caption("Same repeatedly used 1,428-record development validation; different training versions. No fresh independent final test. Scores are not verified correctness probabilities.")
     st.link_button("Open workbench","/")
     st.stop()
-<<<<<<< HEAD
 st.title("ComplaintLens")
-st.caption("English debt-collection category suggestions for human review")
-st.caption("Text is processed on the hosting server. No external model API is used.")
-=======
-st.title("📋 Complaint Intelligence Workbench")
 st.caption("English debt-collection category suggestions for human review · " + ("Hosted synthetic-data demo" if PUBLIC_DEMO else "Local processing"))
->>>>>>> b259f3d866c286d44425dd6b8e72363f566dbf27
 profiles=registry();model_id=st.selectbox("Model",list(profiles["profiles"]),index=list(profiles["profiles"]).index(profiles["default"]),format_func=lambda key:profiles["profiles"][key]["label"])
 @st.cache_resource
 def assets(model_id,registry_stamp):return load_profile(model_id)
