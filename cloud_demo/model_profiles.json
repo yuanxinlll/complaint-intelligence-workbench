@@ -1,0 +1,15 @@
+{
+  "default": "DATA100",
+  "profiles": {
+    "DATA100": {
+      "label": "DATA100 \u00b7 fast TF-IDF baseline",
+      "kind": "sklearn",
+      "path": "cloud_demo/model.joblib",
+      "sha256": "e9fb35f684d264855799dbfac4b398e989ddb7790bd50ab90473c30d2c313bc2",
+      "accuracy": 0.530812324929972,
+      "macro_f1": 0.44091064648906697,
+      "training_rows": 19223,
+      "version": "ciw-lr-data100"
+    }
+  }
+}

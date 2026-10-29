@@ -1,10 +1,12 @@
 """Local versioned model loading; no downloads, network calls or online training."""
 from pathlib import Path
-import hashlib,json,threading
+import hashlib,json,threading,os
 import numpy as np
 from src.data import ROOT
 
-def registry():return json.loads((ROOT/'config/model_profiles.json').read_text())
+def registry():
+    path = 'cloud_demo/model_profiles.json' if os.environ.get('CIW_PUBLIC_DEMO') == '1' else 'config/model_profiles.json'
+    return json.loads((ROOT/path).read_text())
 
 def verify(path,expected):
     if not path.is_file():raise ValueError('Local model files are missing. See README; no download was started.')

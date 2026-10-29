@@ -33,3 +33,6 @@ wheels/
 # Explicitly reviewed aggregate evidence; never add arbitrary research outputs.
 !/docs/evidence/
 !/docs/evidence/*.csv
+
+# User-authorized deployment exception: this exact trusted DATA100 artifact only.
+!/cloud_demo/model.joblib
