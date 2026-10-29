@@ -16,7 +16,7 @@ MAX_BYTES = 5 * 1024 * 1024
 MAX_ROWS = 500
 MAX_TEXT_LENGTH = 50000
 MAX_TOTAL_CHARACTERS = 2000000
-OUTPUT_COLUMNS = {"predicted_issue", "model_score", "needs_review", "input_error", "possible_ambiguity", "score_gap", "alternative_issue", "alternative_score"}
+OUTPUT_COLUMNS = {"model_version", "confirmation_status", "input_truncated", "model_variant", "predicted_issue", "model_score", "needs_review", "input_error", "possible_ambiguity", "score_gap", "alternative_issue", "alternative_score"}
 
 
 def load_assets():

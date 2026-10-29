@@ -1,0 +1,106 @@
+class,rank,term,weight
+Attempts to collect debt not owed,1,fraudulent,2.9157
+Attempts to collect debt not owed,2,paid,2.8971
+Attempts to collect debt not owed,3,accounts,2.814
+Attempts to collect debt not owed,4,identity,2.5726
+Attempts to collect debt not owed,5,mine,2.155
+Attempts to collect debt not owed,6,theft,2.1536
+Attempts to collect debt not owed,7,not my,2.0272
+Attempts to collect debt not owed,8,not mine,1.9778
+Attempts to collect debt not owed,9,fraud,1.9771
+Attempts to collect debt not owed,10,was paid,1.8379
+Attempts to collect debt not owed,11,identity theft,1.8137
+Attempts to collect debt not owed,12,opened,1.7878
+Attempts to collect debt not owed,13,my name,1.6983
+Attempts to collect debt not owed,14,accounts that,1.6518
+Attempts to collect debt not owed,15,credit,1.604
+Communication tactics,1,calls,7.0669
+Communication tactics,2,call,4.1179
+Communication tactics,3,calling,3.9786
+Communication tactics,4,calls from,3.1198
+Communication tactics,5,day,2.885
+Communication tactics,6,a day,2.6642
+Communication tactics,7,repeatedly,2.4459
+Communication tactics,8,called,2.3982
+Communication tactics,9,called me,2.3939
+Communication tactics,10,numbers,2.391
+Communication tactics,11,times,2.2544
+Communication tactics,12,times a,2.1944
+Communication tactics,13,phone,2.111
+Communication tactics,14,1692c,1.9678
+Communication tactics,15,rude,1.9469
+Electronic communications,1,text,6.962
+Electronic communications,2,emails,6.1847
+Electronic communications,3,email,5.6545
+Electronic communications,4,messages,3.1069
+Electronic communications,5,message,2.695
+Electronic communications,6,emailing,2.3511
+Electronic communications,7,number is,2.2935
+Electronic communications,8,contacting me,2.1677
+Electronic communications,9,me emails,2.1663
+Electronic communications,10,trueaccord,2.1305
+Electronic communications,11,receiving emails,2.1242
+Electronic communications,12,was contacted,2.0352
+Electronic communications,13,debit,1.9923
+Electronic communications,14,texting,1.9661
+Electronic communications,15,emails from,1.9079
+False statements or representation,1,amount,3.0126
+False statements or representation,2,interest,1.9894
+False statements or representation,3,new,1.9197
+False statements or representation,4,reporting,1.9085
+False statements or representation,5,incorrect,1.7661
+False statements or representation,6,payments,1.7188
+False statements or representation,7,correct,1.6819
+False statements or representation,8,you,1.6303
+False statements or representation,9,fees,1.6044
+False statements or representation,10,the,1.5856
+False statements or representation,11,charge,1.5742
+False statements or representation,12,balance,1.3584
+False statements or representation,13,the xxxx,1.3308
+False statements or representation,14,inaccurate,1.312
+False statements or representation,15,611 a,1.2923
+Threatened to contact someone or share information improperly,1,called my,4.3057
+Threatened to contact someone or share information improperly,2,employer,3.9341
+Threatened to contact someone or share information improperly,3,family,3.5198
+Threatened to contact someone or share information improperly,4,my employer,3.2318
+Threatened to contact someone or share information improperly,5,calling,2.909
+Threatened to contact someone or share information improperly,6,contacted,2.7673
+Threatened to contact someone or share information improperly,7,calling my,2.6218
+Threatened to contact someone or share information improperly,8,contacted my,2.6016
+Threatened to contact someone or share information improperly,9,about my,2.3778
+Threatened to contact someone or share information improperly,10,contacting my,2.362
+Threatened to contact someone or share information improperly,11,called,2.2232
+Threatened to contact someone or share information improperly,12,my,2.2115
+Threatened to contact someone or share information improperly,13,employment,2.1547
+Threatened to contact someone or share information improperly,14,relative,2.0893
+Threatened to contact someone or share information improperly,15,to my,2.0353
+Took or threatened to take negative or legal action,1,threatened,3.6127
+Took or threatened to take negative or legal action,2,threatening,3.5367
+Took or threatened to take negative or legal action,3,court,2.8637
+Took or threatened to take negative or legal action,4,sue,2.654
+Took or threatened to take negative or legal action,5,sued,2.6113
+Took or threatened to take negative or legal action,6,sue me,2.2552
+Took or threatened to take negative or legal action,7,lawsuit,2.2305
+Took or threatened to take negative or legal action,8,threats,2.2046
+Took or threatened to take negative or legal action,9,against me,2.1044
+Took or threatened to take negative or legal action,10,me,2.0201
+Took or threatened to take negative or legal action,11,legal,2.0158
+Took or threatened to take negative or legal action,12,damaged,2.0019
+Took or threatened to take negative or legal action,13,threaten,1.9739
+Took or threatened to take negative or legal action,14,to sue,1.8694
+Took or threatened to take negative or legal action,15,old,1.839
+Written notification about debt,1,never received,2.9668
+Written notification about debt,2,to dispute,2.9417
+Written notification about debt,3,notice,2.6324
+Written notification about debt,4,never,2.4506
+Written notification about debt,5,letter,2.4364
+Written notification about debt,6,dispute,2.419
+Written notification about debt,7,debt,2.2991
+Written notification about debt,8,validation,2.1546
+Written notification about debt,9,verify,2.1028
+Written notification about debt,10,received,2.0338
+Written notification about debt,11,notification,1.996
+Written notification about debt,12,verify the,1.914
+Written notification about debt,13,received any,1.8964
+Written notification about debt,14,to verify,1.8453
+Written notification about debt,15,the debt,1.8052

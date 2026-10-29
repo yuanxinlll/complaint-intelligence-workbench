@@ -1,0 +1,7 @@
+model,A,B,A_to_B,B_to_A,bidirectional_total
+DATA100,Attempts to collect debt not owed,False statements or representation,97,56,153
+DATA100,Attempts to collect debt not owed,Took or threatened to take negative or legal action,54,27,81
+DATA100,Attempts to collect debt not owed,Written notification about debt,78,23,101
+FT01_epoch3,Attempts to collect debt not owed,False statements or representation,86,43,129
+FT01_epoch3,Attempts to collect debt not owed,Took or threatened to take negative or legal action,58,21,79
+FT01_epoch3,Attempts to collect debt not owed,Written notification about debt,102,27,129

@@ -1,0 +1,23 @@
+keyword,flips,texts,changed_destination_labels
+call,2,5,Communication tactics
+calls,2,5,Communication tactics
+cease,2,5,Communication tactics|Electronic communications
+harass,2,5,Communication tactics|Electronic communications
+phone,2,5,Communication tactics|Electronic communications
+court,1,5,Electronic communications
+email,1,5,Electronic communications
+lawsuit,1,5,Electronic communications
+mail,1,5,Electronic communications
+threatened,1,5,Electronic communications
+today,1,5,Electronic communications
+validation,1,5,Electronic communications
+work,1,5,Electronic communications
+written,1,5,Electronic communications
+attorney,0,5,
+credit report,0,5,
+letter,0,5,
+never owed,0,5,
+not mine,0,5,
+sue,0,5,
+the,0,5,
+wage,0,5,

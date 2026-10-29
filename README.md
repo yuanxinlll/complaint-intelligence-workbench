@@ -1,76 +1,70 @@
 # Complaint Intelligence Workbench
 
-A local English debt-collection complaint classification assistant for the Solix AI Hackathon 2026 Data + AI track. The model suggests a category; a person must read the narrative and confirm the decision. This is a research prototype, not an autonomous complaint-processing system.
+A local English debt-collection classification assistant for human review. Paste a narrative, import a local `.eml` message and check its subject/body, or classify a small UTF-8 CSV. Every suggestion needs a human decision. This prototype does not store final confirmation decisions.
 
-## What is implemented
+## Active model and rollback
 
-- Single-narrative and UTF-8 CSV classification across seven CFPB Issue categories.
-- One suggested category; a possible-ambiguity hint and alternative when the top-two score gap is below 0.10.
-- Narrative inspection, batch filtering, category counts and export of unconfirmed suggestions.
-- English project overview and learning guide.
-- A separate local progress monitor for the current fine-tuning experiment.
+The default local app now uses **FT01, DistilBERT epoch 3**, selected by development Macro-F1. The model selector retains **DATA100** (fast TF-IDF + balanced logistic regression) and original **v1** for comparison/rollback. No online training, external AI API or automatic downloading is used.
 
-The 0.10 gap is a display heuristic, not a validated guarantee. Scores are uncalibrated; a high score or an absent warning does not authorize automatic adoption. Human confirmation storage is not implemented.
+| Version | Training records | Accuracy | Macro-F1 |
+|---|---:|---:|---:|
+| FT01 epoch 3 — default | 19,223 | 52.24% | **0.4629** |
+| DATA100 — fast rollback | 19,223 | **53.08%** | 0.4409 |
+| v1 — original reference | 6,351 | 52.59% | 0.3975 |
+| AUG01 — research only | 19,241 | 53.29% | 0.4433 |
 
-## Model status and honest results
+All results use the repeatedly viewed 1,428-record development validation. There is no fresh independent final test. FT01 improves F1 for electronic communications and third-party disclosure threats, while the other five class F1 scores decrease versus DATA100. It costs more to run and has lower overall Accuracy and Top-2 inclusion. AUG01's tiny gain did not meet its predeclared recommendation gate. Do not describe any model as universally best.
 
-All rows below use the same 1,428-record development validation set, which has been repeatedly viewed. Training versions differ as shown. There is no new independent final test.
+## Features and limits
 
-| Model / experiment | Training records | Accuracy | Macro-F1 | Status |
-|---|---:|---:|---:|---|
-| Active application v1, balanced word/bigram TF-IDF + LR | 6,351 | 52.59% | 0.3975 | Still powers the app |
-| D01 fixed baseline after training-only quarantine | 6,333 | 51.96% | 0.3931 | Reused baseline |
-| D03 unigram TF-IDF + LR | 6,333 | 50.28% | 0.4017 | Historical best word-feature configuration |
-| DATA50, fixed D01 + half of the eligible additions | 12,775 | 53.15% | 0.4217 | Development candidate |
-| DATA100, fixed D01 + all eligible additions | 19,223 | 53.08% | 0.4409 | Best development candidate; not integrated |
-| SEM01, frozen MiniLM + LR | 6,333 | 44.26% | 0.3834 | Not adopted |
-| ENS01, equal DATA100 / SEM01 soft vote | Mixed versions | 51.47% | 0.4384 | No improvement; not adopted |
-| FT01, task-specific DistilBERT fine-tuning | 19,223 | Pending | Pending | Running at the time of this update |
+- One suggested category; an alternative appears for a top-two score gap below 0.10. This is an unvalidated display heuristic, not calibrated correctness.
+- Original text remains available. Scores and details are expandable.
+- Local `.eml` import extracts subject/body for user review. Attachments are ignored, no mailbox is connected, and remote images/links are not fetched. Email-domain accuracy is unmeasured.
+- CSV classification, filters, batch statistics and export of unconfirmed suggestions with model version and truncation indicators. Invalid rows remain visible.
+- English learning guide and recorded model-results page.
 
-Increasing historical data improved development Macro-F1, but DATA100 slightly reduced written-notification F1 relative to D01. Small categories remain weak. The ensemble corrected 68 DATA100 errors but lost 91 previously correct predictions. Failed experiments are retained in the research summary.
+FT01's input cap is 512 tokens including two special tokens. Over 510 content tokens, it uses the first and last 255 and omits the middle; the app warns when this happens. Original text is not overwritten. This can omit important facts. No old model's acceptance threshold is transferred; all records require review.
 
-The historical 1,398-record holdout has already been viewed. It is not used for new model selection and must not be described as a fresh independent final test. Template similarity and label ambiguity limit conclusions. See [research summary](docs/RESEARCH_SUMMARY.md) and [model card](docs/MODEL_CARD.md).
+Phone-word sensitivity was observed in synthetic word-model probes. Simple downweighting and fallback rules did not improve full validation and are not part of the default app. **FT01 has not yet undergone the same keyword-robustness probe.** No claim that the issue is fixed.
 
-## Run the application
+## Local setup
 
-This repository contains code and aggregate documentation only. Complaint records, source archives, trained weights, per-record predictions, review forms and credentials are deliberately excluded. A fresh clone cannot classify complaints until the documented local artifacts have been supplied or recreated.
+Code is shared; complaint records, trained weights, review answers, environments and secrets are excluded. A fresh clone **does not include a ready-to-run model**. The app explains missing files rather than downloading or silently choosing a different model.
 
-The original application was validated with Python 3.14.6 and the pinned dependencies. Installing packages requires network access and is a collaborator action, not part of opening this README.
+The recorded environment is macOS Apple Silicon, Python 3.14.6. The pinned semantic runtime was already installed in an isolated environment; collaborators should review package/platform compatibility and download size before installing on their own machines.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements-evaluation.txt
+python -m pip install -r requirements-semantic.txt
 python -m unittest discover -s tests -v
-python -m streamlit run app.py --server.address 127.0.0.1 --browser.gatherUsageStats false
+python -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501 --browser.gatherUsageStats false
 ```
 
-Windows activation: `.venv\Scripts\activate`. Open http://127.0.0.1:8501 locally. `?view=learn` opens the English learning guide. Without local artifacts, the app explains what is missing; weights are not downloaded automatically.
+Windows activation: `.venv\Scripts\activate`. Installing dependencies is a separate network action; these instructions do not run automatically. No Hugging Face token or paid inference API is needed for local inference with trusted files already present.
 
-## Local data and original pipeline
+## Model artifacts (local only)
 
-Acquire official CFPB historical narrative archives separately, subject to the source's current terms: https://www.consumerfinance.gov/foia-requests/foia-electronic-reading-room/cfpb-consumer-complaint-database-narratives-archive/
+`config/model_profiles.json` records exact version paths, checksums and development metrics. Expected local assets:
 
-The original workflow is `python -m src.inspect_archive /path/to/the/archive.csv`, then `python -m src.train`, then the historical `python -m src.evaluate`, using the paths specified by those modules. Read their CLI/options and input requirements first. These commands generate local data/model/evaluation artifacts and are not automatically run. The evaluation script reproduces a historical workflow; it does not create a fresh independent test. Do not rerun it to select new models.
+- `artifacts/versions/ciw-distilbert-ft01-epoch3/`: model.safetensors, config.json, tokenizer.json, tokenizer_config.json.
+- `artifacts/versions/ciw-lr-data100/model.joblib`.
+- `artifacts/model.joblib` for original v1.
 
-The historical baseline scripts do not recreate the later DATA100 research experiment. That requires separately authorized archives, the training-only quarantine and frozen augmentation lists described in the research summary. Do not simply merge all records or randomly resplit old training data and call it independent testing.
+FT01 artifacts are about 268.56 MB; DATA100 is about 3.86 MB. Obtain/recreate trusted artifacts separately; **do not commit them or bypass checksum verification**. Reproducing training can produce different bytes and requires a new version entry/checksum rather than pretending it is this checkpoint. Joblib can execute code: never load untrusted weights.
 
-App assets: `artifacts/model.joblib`, `artifacts/review_rule.json` and metadata referenced by `src/interface.py`. Never load joblib artifacts from an untrusted source. Input CSV requires `narrative`; optional `complaint_id` and `issue` are not prediction features. Batch limits: 5 MB / 500 rows, 50,000 characters per narrative and 2,000,000 narrative characters total. Invalid rows remain visible.
+The original word-model workflow uses the official historical CFPB narrative archive, `python -m src.inspect_archive /path/to/archive.csv`, then `python -m src.train`. The historical evaluation module reproduces an already-viewed holdout workflow; do not rerun it to tune models or claim a new test. These original commands do not automatically recreate DATA100 or FT01. Later research sources require their separately prepared, versioned local inputs; see [research summary](docs/RESEARCH_SUMMARY.md).
 
-## Fine-tuning and progress monitor
+## Training and verification
 
-The experiment source is included at `research/discrimination_20261028/finetune_run/`. It requires local DATA100 data, an explicitly downloaded DistilBERT snapshot, validation files and a compatible isolated PyTorch environment. These inputs and environments are not committed. Do not run it until resource and data checks are complete. It refuses to overwrite an existing run.
+FT01: one fixed CPU run, three epochs, seed 42, AdamW 2e-5, weight decay 0.01, float32, effective batch 16 via single-record accumulation. Training-only inverse-frequency weights are normalized over each effective batch; an equivalence check prevents single-record weighted-mean cancellation. TF-IDF baselines fit features only on training data.
 
-Fine-tuning is one fixed CPU run, maximum three epochs and eight hours / 6 GB process RSS, with one separate longest-input safety update whose parameters are discarded. Validation Macro-F1 selects a checkpoint; results are development evidence. The training run does not update the application model.
+Epochs: Macro-F1 .4330, .4239, .4629; Accuracy 47.55%, 48.46%, 52.24%. Total workflow about 2h45m38s; peak process memory about 2.47 GB. Model selection was by Macro-F1, not by the last epoch simply being last. Repeated validation and checkpoint selection remain sources of optimism.
 
-```bash
-python -m streamlit run research/discrimination_20261028/finetune_run/progress_app.py --server.address 127.0.0.1 --server.port 8502 --browser.gatherUsageStats false
-```
+The original run ended with a preservation assertion on two Python cache files after all results and the checkpoint were saved. A separate audit verified source/data/old models unchanged and recomputed metrics from saved predictions. Original failure logs were retained; this was a cache-only audit warning, not a hidden training failure. Integration additionally reloaded the model and checked saved outputs on three validation records (verification only, not selection).
 
-The monitor only reads local `state.json` and `training.log`; it does not start training or ship live results in GitHub.
+The read-only progress source is in `research/discrimination_20261028/finetune_run/`. It needs local status files; GitHub does not contain a live training state. Use the main app model selector to roll back without overwriting original files.
 
-## Collaboration
+## Collaboration and presentation
 
-Keep the repository private. Use a feature branch and pull request for code changes. Do not commit real complaint text, identifiers, model weights, local environments or secrets. Tests use synthetic fixtures. No external AI API, mailbox connection, automatic online learning or cloud deployment is implemented. See [contribution guidance](CONTRIBUTING.md), [presentation draft](presentation/DEVPOST_DRAFT.md), and [project status](STATUS.md).
-
-Original November–December archive reference SHA-256: `2ef7d563bf6283a1282bcfba2d99d72f9bfa4a4617524682de72a9b3fa47bed0`. The archive itself is not included.
+Use English for repository code/documentation. [CONTRIBUTING.md](CONTRIBUTING.md) covers data and evaluation isolation. [DEMO.md](DEMO.md), [presentation/DEVPOST_DRAFT.md](presentation/DEVPOST_DRAFT.md) and the pitch are presentation materials, not proof of submission. Research failures and limitations are preserved in `docs/`. The code repository remains private; no external deployment or automatic competition submission was performed.

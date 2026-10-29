@@ -28,11 +28,15 @@ DATA100/SEM01:523 both correct,235 word-only correct,109 semantic-only correct,3
 
 Complaint-level paired bootstrap for DATA100 minus D01 Macro-F1 gave delta .0478, percentile95% interval[.0129,.0846]; repeated validation selection and template dependence can make this optimistic. Do not interpret it as independent final significance evidence.
 
-## Current task fine-tuning
+## Completed task fine-tuning and integration
 
-FT01 is one authorized CPU DistilBERT run, max3 epochs. Model snapshot12040accade4e8a0f71eabdb258fecc2e7e948be, Apache-2.0. AdamW2e-5, weight decay .01, seed42, float32, effective batch16 by single-record accumulation, inverse-frequency loss weights from training only. Weighted losses are normalized over the effective batch, preventing single-record weighted-mean cancellation.
+FT01 completed all three epochs. Accuracy 47.55%, 48.46%, 52.24%; Macro-F1 .4330, .4239, .4629. Epoch3 was selected by the predeclared Macro-F1 rule and is now the local app default. See README and evidence/ for complete per-class results. DATA100 and v1 remain selectable rollback versions.
 
-Input cap512 includes two special tokens; overlong narratives use first255 and last255 content tokens, explicitly discarding the middle. In validation,18.64% of written-notification and16.30% of false-statement records exceed the cap. This differs from the previous full-chunk MiniLM pooling, so outcomes cannot isolate fine-tuning alone. Each epoch uses complete validation; best Macro-F1 selects the checkpoint, with earlier epoch breaking ties. No completed FT01 result is claimed in this snapshot.
+FT01 improves electronic-communications F1 .3363→.4286 and third-party disclosure-threat F1 .1818→.3333, while all five other class F1 scores decrease. Overall Accuracy 52.24% is below DATA100 53.08%. Saved-score Top-2 is69.82%, below DATA10073.39%; this is candidate inclusion, not Top-1 improvement or reviewer success. Runtime and model size are substantially higher in the recorded implementation.
+
+One fixed CPU run: AdamW2e-5, weight decay .01, seed42, float32, effective batch16, training-only inverse-frequency weights. Inputs over510 content tokens retain first255+last255 plus CLS/SEP; omitted middle content is disclosed. This differs from frozen MiniLM full-chunk pooling, so comparison does not isolate only encoder updating.
+
+The terminal preservation assertion flagged only two Python cache files after the complete checkpoint/evaluations were saved. An independent audit verified22922 protected files, source/data/original weights unchanged, saved predictions/metrics consistent. Original failure logs remain local. Integration reloaded the checkpoint and verified three saved validation outputs (no model selection), plus synthetic input/CSV/email/invalid/long-text/export/rollback checks. FT01 keyword robustness has not been retested. No training was added during integration.
 
 ## What evidence cannot establish
 
@@ -56,3 +60,9 @@ Validation has been reused; the historical holdout has already been viewed. No n
 |ENS01|Threatened to contact someone or share information improperly|0.1667|0.3600|0.2278|25|
 |ENS01|Took or threatened to take negative or legal action|0.3909|0.4843|0.4326|159|
 |ENS01|Written notification about debt|0.4361|0.5593|0.4901|177|
+
+## Reviewed synthetic augmentation and tooling
+
+One reviewer completed14 synthetic cases; no second independent reviewer or human-ceiling estimate. Nine cases without unresolved author/reviewer disagreement were retained as base/neutral-phone pairs (18 additions); five ambiguous/unresolved cases were quarantined, preserving original answers. AUG01 reached .4433/53.29%, only+.0024 Macro-F1, below the recommendation gate. Those training-related probes are not independent tests. Review-statistics tooling passes11 synthetic tests and reports multilabel overlap separately from exact-set agreement; degenerate kappa remains undefined, not a fake zero/NaN.
+
+Local EML import, input review, concise output and model-version-aware export are implemented. Final human-decision persistence, mailbox connection, automatic learning and deployment are not implemented.

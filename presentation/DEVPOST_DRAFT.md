@@ -1,45 +1,27 @@
 # Devpost project description — English draft
 
-Project: **Complaint Intelligence Workbench**
-
-Tagline: **Local complaint classification suggestions that keep human judgment visible.**
-
-Track: **Data + AI (Enterprise AI)**
+**Complaint Intelligence Workbench** — local complaint classification suggestions with human review.
 
 ## Inspiration
 
-Customer complaints rarely arrive as clean, single-issue examples. They mix disputed debts, missing notices, communication problems, and legal threats. We wanted a small working tool that offers a useful starting point without disguising uncertain predictions as final decisions.
+English debt-collection complaints mix debt ownership, missing notices, contact behavior and legal threats. We built a small working assistant that preserves the original text and makes uncertain suggestions reviewable.
 
 ## What it does
 
-Our local Streamlit prototype accepts an English debt collection narrative or a UTF-8 CSV and suggests one of seven issue categories. It preserves the narrative for inspection, can reveal an alternative when class scores are close, summarizes batch suggestions, and exports unconfirmed results. Every suggestion needs a human decision; saving that decision is future work.
+Paste a narrative, import a UTF-8 CSV, or review subject/body extracted from a local EML email. The app suggests one of seven categories, may show an alternative, summarizes batches and exports unconfirmed suggestions with model version. No mailbox connection or saved final human-confirmation workflow is claimed.
 
 ## How we built it
 
-We used a CFPB historical archive covering November–December 2024. We selected debt collection records with text, normalized exact-text keys, prevented exact text from crossing chronological splits, and fitted TF-IDF only on training narratives. A balanced logistic regression pipeline powers the current app. Python, pandas, NumPy, scikit-learn, joblib, and Streamlit form the application stack. Classification uses no external model API.
+Historical CFPB narratives, chronological exact-normalized deduplication, training-only feature fitting, explicit training versions and limited recorded experiments. Original TF-IDF/logistic regression remains selectable. The default completed DistilBERT model was fine-tuned in one fixed CPU run and selected by development Macro-F1. Long-text truncation is disclosed.
 
-## Challenges
+## Evidence
 
-Consumer-selected labels can overlap, templates can resemble unrelated complaints, and small categories have few examples. In representative cases, text did not identify a communication channel or expressed multiple reasonable issues. We retained original labels and did not automatically relabel complaints from model predictions.
+FT01 epoch3: Macro-F1 .4629, Accuracy 52.24%; DATA100 .4409/53.08%. FT01 improves two small-class F1 scores but lowers the other five and costs more to run. All metrics are from the repeatedly used1428-record development validation; no fresh independent final test or enterprise efficiency result is claimed.
 
-## Evidence and limitations
+## Challenges and learning
 
-The active v1 model's development validation Accuracy is 52.59%, with Macro-F1 0.3975 on 1,428 records. Validation has been repeatedly used, and historical holdout results have been seen; we do not claim a new independent final test. The separate D03 experiment reached Macro-F1 0.4017 with a changed training version. Its 69.47% Top-2 inclusion rate is not Top-1 accuracy or a score for the current app. A frozen semantic encoder underperformed and was not adopted.
+We found synthetic keyword/repetition sensitivity, tried simple attenuation and a fallback rule, and retained the originals when full-validation results did not improve. On five texts, call changed 2 of 5 predictions and today changed 1 of 5, insufficient to isolate a unique keyword effect. A frozen semantic encoder and equal soft voting did not improve the best word model. A reviewed-synthetic augmentation gain was too small to recommend. FT01 keyword robustness is not yet tested.
 
-The displayed ambiguity hint uses a fixed score-gap heuristic, not a calibrated correctness probability. Reviewers must still read the narrative, including when no hint appears.
+## Next steps
 
-## Accomplishments and learning
-
-We built a working local path from messy historical data to reviewable suggestions, preserved model and data versions, and recorded unsuccessful experiments. We learned that a more complex representation is not automatically better and that missing context cannot be repaired by a confidence score.
-
-## What's next
-
-Subject to separate approval: capture human confirmation without overwriting source labels, clarify ambiguous category boundaries, and test independently sourced earlier training records. Operational time savings and real-world generalization remain unmeasured.
-
----
-
-Organizer-facing fields to complete manually: team member names and registration, actual project link/reviewer access, and final submission. The existing private GitHub copy predates these local edits; do not describe it as synchronized. Do not publish complaint data, machine-specific files, or model artifacts automatically. This is a local prototype, not a hosted service.
-
-## Research update — October 28, 2026
-
-The best offline candidate DATA100 reached development Macro-F1 .4409 and Accuracy53.08% after fixed-configuration historical-data expansion. An equal soft-vote ensemble did not improve it. A task-specific DistilBERT run is ongoing; no completed result is claimed. The active demo still uses v1. No new independent test or automatic model replacement is claimed.
+Independent reviewer agreement, genuinely unused evaluation data, stored human confirmation and carefully evaluated retrieval. Scores are uncalibrated; all suggestions need human judgment. No automatic online learning, deployment or submission.

@@ -51,10 +51,10 @@ def main():
     if (ARTIFACTS / "model.joblib").exists() or LOG.exists():
         raise FileExistsError("Training artifacts already exist. Preserve this run; use a project copy for reruns.")
     started = time.monotonic()
-    log("[1/6] Loading local CSV.")
+    log("[1/6] Read local CSV; narratives are excluded from logs.")
     raw = pd.read_csv(RAW, dtype=str, keep_default_na=False)
-    log(f"Loaded {len(raw):,} candidate records.")
-    log("[2/6] Cleaning, deduplicating, and splitting by date.")
+    log(f"Read complete: {len(raw):,} raw candidate records.")
+    log("[2/6] Clean, keep earliest duplicate text, split by fixed dates.")
     splits, audit = prepare_data(raw)
     processed = ROOT / "data/processed"
     processed.mkdir(parents=True, exist_ok=True)
@@ -64,17 +64,17 @@ def main():
             raise FileExistsError(output)
         part.to_csv(output, index=False, mode="x")
         audit.setdefault("processed_sha256", {})[name] = hashlib.sha256(output.read_bytes()).hexdigest()
-        log(f"{name}: {len(part):,} rows, {part['received_date'].min()} to {part['received_date'].max()}")
+        log(f"{name}: {len(part):,} records, {part['received_date'].min()} to {part['received_date'].max()}")
     save_json("data_audit.json", audit)
     train, validation = splits["train"], splits["validation"]
     labels = audit["labels_from_training"]
-    log(f"Removed {audit['duplicate_narrative_rows_removed']:,} duplicate narratives; no cross-split duplicates. Historical holdout not accessed by this training script.")
-    log("[3/6] Training the majority-class baseline.")
+    log(f"Removed duplicate narratives: {audit['duplicate_narrative_rows_removed']:,} records; no cross-split exact-text duplicates; holdout not accessed.")
+    log("[3/6] Fit most-frequent-class baseline.")
     dummy = DummyClassifier(strategy="most_frequent", random_state=SEED)
     dummy.fit(train["narrative"], train["issue"])
     baseline = validation_metrics(validation["issue"], dummy.predict(validation["narrative"]), labels)
-    log(f"Baseline validation Accuracy={baseline['accuracy']:.4f}, Macro-F1={baseline['macro_f1']:.4f}")
-    log("[4/6] Fitting TF-IDF + LogisticRegression on training data only.")
+    log(f"Baseline validation Accuracy={baseline['accuracy']:.4f}，Macro-F1={baseline['macro_f1']:.4f}")
+    log("[4/6] Fit TF-IDF + LogisticRegression on training only.")
     model = Pipeline([
         ("tfidf", TfidfVectorizer(preprocessor=clean_text, lowercase=False, token_pattern=r"(?u)\b\w+\b", ngram_range=(1, 2), min_df=2, max_df=0.98, max_features=40000, sublinear_tf=True)),
         ("classifier", LogisticRegression(C=1.0, class_weight="balanced", max_iter=1000, solver="lbfgs", random_state=SEED)),
@@ -82,18 +82,18 @@ def main():
     with warnings.catch_warnings():
         warnings.simplefilter("error", ConvergenceWarning)
         model.fit(train["narrative"], train["issue"])
-    log(f"Training complete: {len(model.named_steps['tfidf'].vocabulary_):,} features, iterations {model.named_steps['classifier'].n_iter_.tolist()}.")
-    log("[5/6] Evaluating validation predictions.")
+    log(f"Training complete: vocabulary {len(model.named_steps['tfidf'].vocabulary_):,} features; iterations {model.named_steps['classifier'].n_iter_.tolist()}。")
+    log("[5/6] Validation predictions only; no threshold selection.")
     predicted = model.predict(validation["narrative"])
     scores = model.predict_proba(validation["narrative"]).max(axis=1)
     metrics = validation_metrics(validation["issue"], predicted, labels)
-    log(f"Text model validation Accuracy={metrics['accuracy']:.4f}, Macro-F1={metrics['macro_f1']:.4f}")
+    log(f"Text model validation Accuracy={metrics['accuracy']:.4f}，Macro-F1={metrics['macro_f1']:.4f}")
     predictions = validation[["complaint_id", "received_date", "issue"]].copy()
     predictions["predicted_issue"] = predicted
     predictions["model_score"] = scores
     predictions.to_csv(ARTIFACTS / "validation_predictions.csv", index=False)
     save_json("validation_metrics.json", {"evaluation_split": "validation", "baseline": baseline, "text_model": metrics, "review_threshold": None, "test_evaluated": False})
-    log("[6/6] Saving artifacts and checking model reload consistency.")
+    log("[6/6] Save parameters/dependencies; verify model reload.")
     joblib.dump(model, ARTIFACTS / "model.joblib")
     joblib.dump(dummy, ARTIFACTS / "baseline.joblib")
     restored = joblib.load(ARTIFACTS / "model.joblib")
@@ -119,7 +119,7 @@ def main():
     save_json("metadata.json", metadata)
     versions = metadata["versions"]
     (ROOT / "requirements.txt").write_text("\n".join(f"{name}=={versions[name]}" for name in ["pandas", "numpy", "scikit-learn", "scipy", "joblib", "streamlit"]) + "\n", encoding="utf-8")
-    log(f"Training complete in {metadata['duration_seconds']} seconds.")
+    log(f"Original training complete in {metadata['duration_seconds']} seconds; separate evaluation not run.")
 
 
 if __name__ == "__main__":

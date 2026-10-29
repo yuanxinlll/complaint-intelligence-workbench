@@ -1,0 +1,7 @@
+model,training_rows,accuracy,macro_f1,status
+v1,6351,0.5259103641456583,0.39748246764371703,original app8501 / preview8503
+DATA100,19223,0.530812324929972,0.44091064648906697,current candidate page8504
+AUG01,19241,0.5329131652661064,0.44332325942031137,research only; gain below gate
+DistilBERT_epoch1,19223,0.47549019607843135,0.4329596623700184,saved epoch; validation-selected checkpoints are development evidence
+DistilBERT_epoch2,19223,0.484593837535014,0.423941255708069,saved epoch; validation-selected checkpoints are development evidence
+DistilBERT_epoch3,19223,0.5224089635854342,0.4629171833270433,saved epoch; validation-selected checkpoints are development evidence

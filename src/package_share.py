@@ -14,16 +14,18 @@ def main():
     archive = ROOT / "exports/complaint-intelligence-workbench-code.zip"
     if output.exists() or archive.exists():
         raise FileExistsError("Share snapshot already exists; preserve it and review before rebuilding.")
-    files = [ROOT / name for name in [".gitignore", "README.md", "STATUS.md", "LEARNING_GUIDE.md", "app.py", "requirements.txt", "requirements-evaluation.txt"]]
+    files = [ROOT / name for name in [".gitignore", "README.md", "STATUS.md", "LEARNING_GUIDE.md", "app.py", "requirements.txt", "requirements-evaluation.txt", "requirements-semantic.txt", "LEARNING_GUIDE_EN.md", "DEMO.md"]]
     files += sorted((ROOT / "src").glob("*.py"))
     files += sorted((ROOT / "tests").glob("test_*.py"))
     files += [ROOT / "reports" / name for name in ["SHARED_RESULTS.md", "test_confusion_matrix.png", "validation_review_curve.png"]]
+    files += sorted((ROOT / "config").glob("*.json"))
+    files += sorted((ROOT / "docs").glob("*.md"))
     manifest = []
     for source in files:
         if source.is_symlink() or not source.is_file():
             raise ValueError(f"Expected a regular source file: {source.name}")
         relative = source.relative_to(ROOT)
-        if source.suffix not in {".py", ".md", ".txt", ".png"} and source.name != ".gitignore":
+        if source.suffix not in {".py", ".md", ".txt", ".png", ".json"} and source.name != ".gitignore":
             raise ValueError(f"Unexpected share file: {relative}")
         destination = output / relative
         destination.parent.mkdir(parents=True, exist_ok=True)

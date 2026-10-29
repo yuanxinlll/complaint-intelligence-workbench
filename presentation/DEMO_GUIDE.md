@@ -1,9 +1,9 @@
-# Demonstration guide
+# Demo order
 
-1. Start the local app and show the original narrative beside the suggested category.
-2. Use the three explicitly synthetic examples to demonstrate single and batch behavior, not to claim measured accuracy.
-3. Explain the possible-ambiguity hint if present. Its absence is not evidence that a prediction is correct.
-4. Export suggestions and explain that human confirmation has not been recorded.
-5. Open Project overview for the English project description. Separate active v1 scores from offline DATA100 scores.
-6. If showing training progress on port8502, explain that results are pending until full validation; do not claim improvement from training loss.
-7. Use PITCH_EN.md as a script. Submission is manual; these files are drafts, not proof of submission.
+1. Open the main app: FT01 is the default. State its development52.24% Accuracy/.4629 Macro-F1 and limitations.
+2. Paste an explicitly synthetic complaint. Show original text, one suggestion and any genuinely triggered alternative.
+3. Import a synthetic local EML, review extracted subject/body, confirm the input then classify. This is not a mailbox connection or saved final category decision.
+4. Run the three synthetic CSV examples; show filters/counts and export. Explain version/truncation metadata and unconfirmed status.
+5. Switch to DATA100 for rollback/comparison. Do not select models based on which looks better on a staged example.
+6. Use model results/learning guide and docs/evidence for questions. FT01 phone robustness is still untested; do not claim it fixed the issue.
+7. Presentation text is a draft; submission is manual and not performed by this repository.

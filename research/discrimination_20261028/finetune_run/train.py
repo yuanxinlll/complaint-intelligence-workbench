@@ -24,7 +24,7 @@ def watch():
   time.sleep(.5)
 threading.Thread(target=watch,daemon=True).start()
 try:
- protected={str(p.relative_to(R)):sha(p) for p in R.rglob('*') if p.is_file() and O not in p.parents and '.git' not in p.parts};save('protected_before.json',protected)
+ protected={str(p.relative_to(R)):sha(p) for p in R.rglob('*') if p.is_file() and O not in p.parents and not any(x in p.parts for x in ['.git','__pycache__','venv','.venv','wheels'])};save('protected_before.json',protected)
  frames={k:pd.read_csv(p,dtype={'complaint_id':str}) for k,p in paths.items()};tr=frames['train'];va=frames['validation'];assert len(tr)==19223 and len(va)==1428
  assert not set(tr.complaint_id)&set(va.complaint_id);assert not set(tr.text_hash)&set(va.text_hash)
  labels=sorted(tr.issue.unique());assert len(labels)==7 and set(labels)==set(va.issue)
@@ -68,8 +68,9 @@ try:
   if macro>best:
    best=macro;state['best_epoch']=epoch;m.save_pretrained(O/'best_model');tok.save_pretrained(O/'best_model')
   status();print('EPOCH_RESULT',json.dumps(record),flush=True)
- state.update(status='completed',fit_total_seconds=fit_total,model_size_bytes=sum(p.stat().st_size for p in (O/'best_model').rglob('*') if p.is_file()));status();alive=False
+ state.update(status='final_integrity_check',fit_total_seconds=fit_total,model_size_bytes=sum(p.stat().st_size for p in (O/'best_model').rglob('*') if p.is_file()));status();alive=False
  save('score_metadata.json',{'labels_in_class_score_order':labels,'meaning':'uncalibrated softmax; not correctness probability'})
  changed=[n for n,h in protected.items() if sha(R/n)!=h];save('checks.json',{'changed_existing_files':changed,'safety_updates':1,'formal_training_runs':1,'epochs':3,'historical_test_access':False,'application_changed':False});assert not changed
+ state['status']='completed';status()
 except BaseException as e:
  alive=False;state.update(status='failed',error=repr(e),traceback=traceback.format_exc());status();raise

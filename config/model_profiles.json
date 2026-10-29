@@ -1,0 +1,40 @@
+{
+  "default": "FT01",
+  "profiles": {
+    "FT01": {
+      "label": "FT01 \u00b7 DistilBERT epoch 3",
+      "kind": "distilbert",
+      "path": "artifacts/versions/ciw-distilbert-ft01-epoch3",
+      "sha256": {
+        "model.safetensors": "6da3c648cadcddb145a62a71c734ac719dcf8f04157e672b2c536191fe650b5d",
+        "tokenizer_config.json": "04c4c3f8c445a1415ccbb7578053de0d66aeeb2f34b2bee6073e599cf39a0516",
+        "config.json": "1333c89ec5f9bb4350e55505243570151dfba11938febcdcaf6d002a06f7079e",
+        "tokenizer.json": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66"
+      },
+      "accuracy": 0.5224089635854342,
+      "macro_f1": 0.4629171833270433,
+      "training_rows": 19223,
+      "version": "ciw-distilbert-ft01-epoch3"
+    },
+    "DATA100": {
+      "label": "DATA100 \u00b7 fast TF-IDF baseline",
+      "kind": "sklearn",
+      "path": "artifacts/versions/ciw-lr-data100/model.joblib",
+      "sha256": "e9fb35f684d264855799dbfac4b398e989ddb7790bd50ab90473c30d2c313bc2",
+      "accuracy": 0.530812324929972,
+      "macro_f1": 0.44091064648906697,
+      "training_rows": 19223,
+      "version": "ciw-lr-data100"
+    },
+    "v1": {
+      "label": "v1 \u00b7 original reference",
+      "kind": "sklearn",
+      "path": "artifacts/model.joblib",
+      "sha256": "2cd7f00067df8cb210b393e65100fa5dc58d16c9f6873dd1294e2b582b1c62bd",
+      "accuracy": 0.5259103641456583,
+      "macro_f1": 0.39748246764371703,
+      "training_rows": 6351,
+      "version": "ciw-lr-v1-20261028"
+    }
+  }
+}

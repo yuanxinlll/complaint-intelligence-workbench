@@ -1,0 +1,44 @@
+[
+  {
+    "Model": "FT01",
+    "Training rows": 19223,
+    "Accuracy": "52.24%",
+    "Macro-F1": "0.4629",
+    "Status": "Default selected by Macro-F1"
+  },
+  {
+    "Model": "DATA100",
+    "Training rows": 19223,
+    "Accuracy": "53.08%",
+    "Macro-F1": "0.4409",
+    "Status": "Rollback / comparison"
+  },
+  {
+    "Model": "v1",
+    "Training rows": 6351,
+    "Accuracy": "52.59%",
+    "Macro-F1": "0.3975",
+    "Status": "Rollback / comparison"
+  },
+  {
+    "Model": "AUG01",
+    "Training rows": 19241,
+    "Accuracy": "53.29%",
+    "Macro-F1": "0.4433",
+    "Status": "Research only; not automatically adopted"
+  },
+  {
+    "Model": "SEM01",
+    "Training rows": 6333,
+    "Accuracy": "44.26%",
+    "Macro-F1": "0.3834",
+    "Status": "Research only; not automatically adopted"
+  },
+  {
+    "Model": "ENS01",
+    "Training rows": "mixed versions",
+    "Accuracy": "51.47%",
+    "Macro-F1": "0.4384",
+    "Status": "Research only; not automatically adopted"
+  }
+]

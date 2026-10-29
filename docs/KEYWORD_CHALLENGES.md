@@ -1,0 +1,9 @@
+# Keyword sensitivity — presentation draft
+
+We tested two locally trained word-feature classifiers on five synthetic complaint narratives using word insertion and deletion. In DATA100, appending “call” changed 2 of 5 predictions, both toward Communication tactics, and appending “phone” changed 2 of 5 with different destinations. The control word “today” changed 1 of 5, while “the” changed none. With only five texts, we cannot separate a keyword-specific effect from general instability near decision margins. These are small-set observations, not population failure rates or accuracy measurements.
+
+Global coefficients associated call-related words with Communication tactics, but coefficients alone do not establish why a specific complaint was classified. The original classifier showed no call-insertion flips on this set, illustrating that results depend on baseline text and decision margins. Word deletion can change meaning, neighboring word pairs and normalization. A timing word such as “today” is also not guaranteed to be semantically irrelevant.
+
+Simple feature attenuation and a phone-as-fallback rule did not improve full development-validation performance. We retained the original model versions and documented the failure, rather than presenting a keyword patch as a proven fix. A later small reviewed-synthetic augmentation trial produced only a 0.0024 development Macro-F1 increase, below the predeclared recommendation gate, and was not automatically adopted. The next research question is how to distinguish contact channel from the complained-of behavior using reviewed examples and separate robustness evaluation.
+
+We built a local assistant for human review, measured its limits, documented examples of contact-channel language overriding the intended issue, and tested simple fixes without overclaiming. Suggestions still require a person to read the narrative; recording final confirmation decisions remains future work.

@@ -29,3 +29,7 @@ wheels/
 /research/**/protected_before.json
 /research/**/pilot_sample_ids*
 /research/**/reviewer_packet/
+
+# Explicitly reviewed aggregate evidence; never add arbitrary research outputs.
+!/docs/evidence/
+!/docs/evidence/*.csv
