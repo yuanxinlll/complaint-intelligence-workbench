@@ -8,7 +8,7 @@ from src.predict import predict_text
 from src.email_import import extract_email
 from src.runtime_models import registry,load_profile
 ROOT=Path(__file__).resolve().parent
-st.set_page_config(page_title="Complaint Intelligence Workbench",page_icon="📋",layout="wide")
+st.set_page_config(page_title="ComplaintLens",page_icon=str(ROOT/"assets/complaintlens-icon.png"),layout="wide")
 if st.query_params.get("view")=="learn":
     st.markdown((ROOT/"LEARNING_GUIDE_EN.md").read_text())
     st.link_button("Open workbench","/")
@@ -19,8 +19,9 @@ if st.query_params.get("view")=="results":
     st.caption("Same repeatedly used 1,428-record development validation; different training versions. No fresh independent final test. Scores are not verified correctness probabilities.")
     st.link_button("Open workbench","/")
     st.stop()
-st.title("📋 Complaint Intelligence Workbench")
-st.caption("English debt-collection category suggestions for human review · Local processing")
+st.title("ComplaintLens")
+st.caption("English debt-collection category suggestions for human review")
+st.caption("Text is processed on the hosting server. No external model API is used.")
 profiles=registry();model_id=st.selectbox("Model",list(profiles["profiles"]),index=list(profiles["profiles"]).index(profiles["default"]),format_func=lambda key:profiles["profiles"][key]["label"])
 @st.cache_resource
 def assets(model_id,registry_stamp):return load_profile(model_id)
