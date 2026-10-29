@@ -1,10 +1,16 @@
 # Complaint Intelligence Workbench
 
+## Live Demo
+
+**[Open the online DATA100 demo](https://complaint-intelligence-workbench-yzgqmjj3iz9diac9jwjxns.streamlit.app/)**
+
+No login was required in our deployment check. Use synthetic text only: cloud inputs and uploads are processed on the hosting server. The hosted model is DATA100, while the separate local app defaults to FT01. Free hosting may sleep between visits.
+
 A local English debt-collection classification assistant for human review. Paste a narrative, import a local `.eml` message and check its subject/body, or classify a small UTF-8 CSV. Every suggestion needs a human decision. This prototype does not store final confirmation decisions.
 
 ## Online demo setup
 
-The lightweight hosted entrypoint is `cloud_demo/streamlit_app.py`, using DATA100 (53.08% development Accuracy, Macro-F1 0.4409). The one trusted 3.86 MB DATA100 artifact is included with explicit owner authorization. No complaint records or FT01 weights are shared. Inputs to a hosted app leave the browser for its server: use synthetic text only. [Deployment instructions and current status](cloud_demo/README.md). A Live Demo link will appear here after deployment is verified.
+The lightweight hosted entrypoint is `cloud_demo/streamlit_app.py`, using DATA100 (53.08% development Accuracy, Macro-F1 0.4409). The one trusted 3.86 MB DATA100 artifact is included with explicit owner authorization. No complaint records or FT01 weights are shared. Inputs to a hosted app leave the browser for its server: use synthetic text only. [Deployment instructions and current status](cloud_demo/README.md). The Live Demo link above was checked with synthetic single and three-record batch inference.
 
 ## Active model and rollback
 

@@ -34,4 +34,6 @@ Running `app.py` directly keeps the local model registry and requires separately
 
 ## Deployment status
 
-Prepared for deployment. A working public URL will be added to the root README only after actual startup and synthetic inference have been verified. This document is not proof that deployment succeeded.
+Live demo: [https://complaint-intelligence-workbench-yzgqmjj3iz9diac9jwjxns.streamlit.app/](https://complaint-intelligence-workbench-yzgqmjj3iz9diac9jwjxns.streamlit.app/).
+
+Verified on October 28, 2026 from a browser without a Streamlit login prompt: DATA100 loaded, a synthetic written-notice complaint produced Written notification about debt, and all three built-in batch examples classified with zero input errors. The model version and hosted-data warning were visible. Local input/parser/export checks also passed. These smoke checks do not measure model accuracy or establish continuous availability. Public hosting and source-repository visibility are separate settings.
