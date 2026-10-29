@@ -1,6 +1,6 @@
 """Local complaint classification assistant with explicit version selection."""
 from pathlib import Path
-import hashlib,json
+import hashlib,json,os
 import pandas as pd
 import streamlit as st
 from src.interface import classify_batch,read_upload
@@ -8,9 +8,16 @@ from src.predict import predict_text
 from src.email_import import extract_email
 from src.runtime_models import registry,load_profile
 ROOT=Path(__file__).resolve().parent
+PUBLIC_DEMO=os.environ.get("CIW_PUBLIC_DEMO")=="1"
 st.set_page_config(page_title="Complaint Intelligence Workbench",page_icon="📋",layout="wide")
+if PUBLIC_DEMO:
+    st.warning("Hosted demonstration: use synthetic text only. Inputs and uploaded files are sent to the hosting server. Do not enter personal, financial or real complaint data.")
+    st.caption("Online demo: DATA100 TF-IDF model. The separate local app defaults to FT01 DistilBERT. No external AI API is used.")
 if st.query_params.get("view")=="learn":
-    st.markdown((ROOT/"LEARNING_GUIDE_EN.md").read_text())
+    guide=(ROOT/"LEARNING_GUIDE_EN.md").read_text()
+    if PUBLIC_DEMO:
+        guide=guide.replace("The default DistilBERT model was fine-tuned on the seven-category task.", "This hosted demo uses the DATA100 TF-IDF model. The separate local default is fine-tuned DistilBERT.").replace("All classification runs locally.", "In this hosted demo, classification runs on the hosting server. Use synthetic text only.")
+    st.markdown(guide)
     st.link_button("Open workbench","/")
     st.stop()
 if st.query_params.get("view")=="results":
@@ -20,12 +27,12 @@ if st.query_params.get("view")=="results":
     st.link_button("Open workbench","/")
     st.stop()
 st.title("📋 Complaint Intelligence Workbench")
-st.caption("English debt-collection category suggestions for human review · Local processing")
+st.caption("English debt-collection category suggestions for human review · " + ("Hosted synthetic-data demo" if PUBLIC_DEMO else "Local processing"))
 profiles=registry();model_id=st.selectbox("Model",list(profiles["profiles"]),index=list(profiles["profiles"]).index(profiles["default"]),format_func=lambda key:profiles["profiles"][key]["label"])
 @st.cache_resource
 def assets(model_id,registry_stamp):return load_profile(model_id)
 try:
-    with st.spinner("Loading the local model…"):
+    with st.spinner("Loading the model…"):
         model,rule,info=assets(model_id,(ROOT/"config/model_profiles.json").stat().st_mtime_ns)
 except Exception as error:
     st.error(str(error))
@@ -69,7 +76,7 @@ with single:
     st.caption("Maximum 50,000 characters. The model was trained on English complaints.")
     if st.button("Classify complaint", type="primary"):
         try:
-            with st.spinner("Classifying locally…"):
+            with st.spinner("Classifying…"):
                 result = predict_text(text, model, rule)
             show_result(result, text)
         except ValueError as error:
@@ -77,7 +84,9 @@ with single:
 
 with email_tab:
     st.write("Import an unlabeled English debt-collection email. No mailbox login or existing category is needed.")
-    st.caption("Local .eml only · Maximum 5 MB · Attachments ignored · No remote images or links are opened.")
+    st.caption(".eml files only · Maximum 5 MB · Attachments ignored · No remote images or links are opened.")
+    if PUBLIC_DEMO:
+        st.caption("Synthetic email examples only: uploaded files are processed on the hosting server, not on your computer.")
     st.download_button("Download a synthetic email example", b"Subject: Missing debt notice\r\nFrom: demo@example.com\r\nTo: reviewer@example.com\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\n\r\nI requested written proof of this debt but have not received a notice.\r\n", "synthetic_complaint.eml", "message/rfc822")
     mail = st.file_uploader("Choose an email file", type=["eml"], max_upload_size=5, key="eml_upload")
     if mail is not None:
@@ -151,7 +160,7 @@ with batch:
         if duplicates:
             st.warning(f"Found {duplicates} duplicate narrative rows. Every row is retained and included in the batch statistics.")
         if st.button("Classify batch", type="primary"):
-            with st.spinner(f"Classifying {len(frame)} records locally…"):
+            with st.spinner(f"Classifying {len(frame)} records…"):
                 st.session_state["batch_result"] = classify_batch(frame, model, rule)
                 result_frame = st.session_state["batch_result"]
                 result_frame["model_version"] = info["version"]
@@ -198,4 +207,7 @@ with batch:
         st.download_button("Export unconfirmed suggestions as CSV", shown.to_csv(index=False).encode("utf-8-sig"), "complaint_suggestions_unconfirmed.csv", "text/csv")
 
 with overview:
-    st.markdown((ROOT / "DEMO.md").read_text(encoding="utf-8"))
+    if PUBLIC_DEMO:
+        st.markdown((ROOT / "cloud_demo/README.md").read_text(encoding="utf-8"))
+    else:
+        st.markdown((ROOT / "DEMO.md").read_text(encoding="utf-8"))

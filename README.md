@@ -2,6 +2,10 @@
 
 A local English debt-collection classification assistant for human review. Paste a narrative, import a local `.eml` message and check its subject/body, or classify a small UTF-8 CSV. Every suggestion needs a human decision. This prototype does not store final confirmation decisions.
 
+## Online demo setup
+
+The lightweight hosted entrypoint is `cloud_demo/streamlit_app.py`, using DATA100 (53.08% development Accuracy, Macro-F1 0.4409). The one trusted 3.86 MB DATA100 artifact is included with explicit owner authorization. No complaint records or FT01 weights are shared. Inputs to a hosted app leave the browser for its server: use synthetic text only. [Deployment instructions and current status](cloud_demo/README.md). A Live Demo link will appear here after deployment is verified.
+
 ## Active model and rollback
 
 The default local app now uses **FT01, DistilBERT epoch 3**, selected by development Macro-F1. The model selector retains **DATA100** (fast TF-IDF + balanced logistic regression) and original **v1** for comparison/rollback. No online training, external AI API or automatic downloading is used.
@@ -29,7 +33,7 @@ Phone-word sensitivity was observed in synthetic word-model probes. Simple downw
 
 ## Local setup
 
-Code is shared; complaint records, trained weights, review answers, environments and secrets are excluded. A fresh clone **does not include a ready-to-run model**. The app explains missing files rather than downloading or silently choosing a different model.
+Complaint records, FT01/v1 weights, review answers, environments and secrets are excluded. The explicit exception is the trusted DATA100 artifact for `cloud_demo/streamlit_app.py`. A fresh clone can run that demo after installing dependencies; `app.py` still requires its separate local model artifacts. The app explains missing files rather than downloading or silently choosing a different model.
 
 The recorded environment is macOS Apple Silicon, Python 3.14.6. The pinned semantic runtime was already installed in an isolated environment; collaborators should review package/platform compatibility and download size before installing on their own machines.
 
@@ -43,7 +47,7 @@ python -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501 --b
 
 Windows activation: `.venv\Scripts\activate`. Installing dependencies is a separate network action; these instructions do not run automatically. No Hugging Face token or paid inference API is needed for local inference with trusted files already present.
 
-## Model artifacts (local only)
+## Model artifacts and the authorized cloud exception
 
 `config/model_profiles.json` records exact version paths, checksums and development metrics. Expected local assets:
 
@@ -51,7 +55,7 @@ Windows activation: `.venv\Scripts\activate`. Installing dependencies is a separ
 - `artifacts/versions/ciw-lr-data100/model.joblib`.
 - `artifacts/model.joblib` for original v1.
 
-FT01 artifacts are about 268.56 MB; DATA100 is about 3.86 MB. Obtain/recreate trusted artifacts separately; **do not commit them or bypass checksum verification**. Reproducing training can produce different bytes and requires a new version entry/checksum rather than pretending it is this checkpoint. Joblib can execute code: never load untrusted weights.
+FT01 artifacts are about 268.56 MB; DATA100 is about 3.86 MB. Obtain/recreate trusted artifacts separately; **do not commit additional artifacts or bypass checksum verification**. The exact `cloud_demo/model.joblib` is the separately authorized DATA100 hosting exception. Reproducing training can produce different bytes and requires a new version entry/checksum rather than pretending it is this checkpoint. Joblib can execute code: never load untrusted weights.
 
 The original word-model workflow uses the official historical CFPB narrative archive, `python -m src.inspect_archive /path/to/archive.csv`, then `python -m src.train`. The historical evaluation module reproduces an already-viewed holdout workflow; do not rerun it to tune models or claim a new test. These original commands do not automatically recreate DATA100 or FT01. Later research sources require their separately prepared, versioned local inputs; see [research summary](docs/RESEARCH_SUMMARY.md).
 
@@ -67,4 +71,4 @@ The read-only progress source is in `research/discrimination_20261028/finetune_r
 
 ## Collaboration and presentation
 
-Use English for repository code/documentation. [CONTRIBUTING.md](CONTRIBUTING.md) covers data and evaluation isolation. [DEMO.md](DEMO.md), [presentation/DEVPOST_DRAFT.md](presentation/DEVPOST_DRAFT.md) and the pitch are presentation materials, not proof of submission. Research failures and limitations are preserved in `docs/`. The code repository remains private; no external deployment or automatic competition submission was performed.
+Use English for repository code/documentation. [CONTRIBUTING.md](CONTRIBUTING.md) covers data and evaluation isolation. [DEMO.md](DEMO.md), [presentation/DEVPOST_DRAFT.md](presentation/DEVPOST_DRAFT.md) and the pitch are presentation materials, not proof of submission. Research failures and limitations are preserved in `docs/`. The code repository remains private. The owner authorized preparing a DATA100 hosted demo; current deployment status is in `cloud_demo/README.md`. No automatic competition submission occurs.
